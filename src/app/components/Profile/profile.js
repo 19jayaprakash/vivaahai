@@ -446,7 +446,7 @@ export default function ProfileCreation() {
         <div className="relative group">
           <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-300 w-5 h-5 group-focus-within:text-cyan-400 transition-colors" />
           <input
-            type="number"
+            type="text"
             placeholder="Height (cm)"
             value={formData.height}
             onChange={(e) => handleInputChange('height', e.target.value)}
@@ -457,7 +457,7 @@ export default function ProfileCreation() {
         <div className="relative group">
           <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-300 w-5 h-5 group-focus-within:text-cyan-400 transition-colors" />
           <input
-            type="number"
+            type="text"
             placeholder="Weight (kg)"
             value={formData.weight}
             onChange={(e) => handleInputChange('weight', e.target.value)}
