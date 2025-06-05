@@ -28,7 +28,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/base/constant.js"  ],
   "exclude": [
     "node_modules"
   ]
