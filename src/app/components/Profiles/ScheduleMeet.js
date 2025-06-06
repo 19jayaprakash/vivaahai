@@ -302,14 +302,14 @@ const ScheduleMeetScreen = () => {
                 onClick={() => changeYear(-1)}
                 className="p-2 rounded-full hover:bg-indigo-700 transition-colors"
               >
-                <span className="text-xl font-bold">«</span>
+                <span className="text-xl font-bold text-white">«</span>
               </button>
-              <h3 className="text-xl font-bold">{currentYear}</h3>
+              <h3 className="text-xl font-bold text-white">{currentYear}</h3>
               <button
                 onClick={() => changeYear(1)}
                 className="p-2 rounded-full hover:bg-indigo-700 transition-colors"
               >
-                <span className="text-xl font-bold">»</span>
+                <span className="text-xl font-bold text-white">»</span>
               </button>
             </div>
             <div className="flex justify-between items-center">
@@ -317,16 +317,16 @@ const ScheduleMeetScreen = () => {
                 onClick={() => changeMonth(-1)}
                 className="p-2 rounded-full hover:bg-indigo-700 transition-colors"
               >
-                <span className="text-xl font-bold">‹</span>
+                <span className="text-xl font-bold text-white">‹</span>
               </button>
-              <h3 className="text-xl font-bold">
+              <h3 className="text-xl font-bold text-white">
                 {getMonthName(currentMonth)}
               </h3>
               <button
                 onClick={() => changeMonth(1)}
                 className="p-2 rounded-full hover:bg-indigo-700 transition-colors"
               >
-                <span className="text-xl font-bold">›</span>
+                <span className="text-xl font-bold text-white">›</span>
               </button>
             </div>
           </div>
@@ -336,7 +336,7 @@ const ScheduleMeetScreen = () => {
               {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
                 <div
                   key={i}
-                  className="text-center text-gray-500 text-sm font-medium"
+                  className="text-center text-black text-sm font-medium"
                 >
                   {day}
                 </div>
@@ -355,7 +355,7 @@ const ScheduleMeetScreen = () => {
                     ${
                       isSelected(day)
                         ? "bg-indigo-500 text-white"
-                        : "hover:bg-gray-100"
+                        : "hover:bg-gray-100 text-black"
                     }
                   `}
                 >
@@ -392,7 +392,7 @@ const ScheduleMeetScreen = () => {
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-xl">
           <div className="bg-[#FF6B6B] text-white p-5 text-center">
-            <h3 className="text-xl font-bold">Select Time</h3>
+            <h3 className="text-xl font-bold text-white">Select Time</h3>
           </div>
 
           <div className="p-6">
@@ -407,7 +407,7 @@ const ScheduleMeetScreen = () => {
                         ${
                           selectedHour === hour
                             ? "bg-[#FF6B6B] text-white"
-                            : "hover:bg-gray-200"
+                            : "hover:bg-gray-200 text-black"
                         }
                       `}
                     >
@@ -427,7 +427,7 @@ const ScheduleMeetScreen = () => {
                         ${
                           selectedMinute === minute
                             ? "bg-[#FF6B6B] text-white"
-                            : "hover:bg-gray-200"
+                            : "hover:bg-gray-200 text-black"
                         }
                       `}
                     >
@@ -442,7 +442,7 @@ const ScheduleMeetScreen = () => {
                   <button
                     onClick={() => setIsAM(true)}
                     className={`w-16 py-3 rounded-lg text-lg font-medium
-                      ${isAM ? "bg-[#FF6B6B] text-white" : "hover:bg-gray-200"}
+                      ${isAM ? "bg-[#FF6B6B] text-white" : "hover:bg-gray-200 text-black"}
                     `}
                   >
                     AM
@@ -451,7 +451,7 @@ const ScheduleMeetScreen = () => {
                     onClick={() => setIsAM(false)}
                     className={`w-16 py-3 rounded-lg text-lg font-medium
                       ${
-                        !isAM ? "bg-[#FF6B6B] text-white" : "hover:bg-gray-200"
+                        !isAM ? "bg-[#FF6B6B] text-white" : "hover:bg-gray-200 text-black"
                       }
                     `}
                   >
@@ -461,7 +461,7 @@ const ScheduleMeetScreen = () => {
               </div>
             </div>
 
-            <div className="text-center text-xl font-bold mb-6">
+            <div className="text-center text-xl font-bold mb-6 text-black">
               {selectedHour.toString().padStart(2, "0")}:
               {selectedMinute.toString().padStart(2, "0")} {isAM ? "AM" : "PM"}
             </div>
