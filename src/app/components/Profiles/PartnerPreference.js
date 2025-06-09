@@ -724,7 +724,6 @@ useEffect(() => {
         }
         localStorage.removeItem("editData");
       } catch (error) {
-        console.error("Error loading edit data:", error);
         setSubmitError("Error loading existing data");
       }
     }
