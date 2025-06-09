@@ -274,8 +274,7 @@ const MatrimonialProfile = () => {
   const getWeightValue = (weightString) => {
     try {
       if (!weightString) return null;
-      const value = parseInt(weightString.toString().replace(" kg", ""));
-      return isNaN(value) ? null : value;
+      return weightString;
     } catch (error) {
       console.error("Error parsing weight value:", error);
       return null;
@@ -443,11 +442,6 @@ const MatrimonialProfile = () => {
             } else {
               const minCm = ftToCm(min);
               const maxCm = ftToCm(max);
-              if (minCm < 140 || maxCm > 220) {
-                errorMessage = "Height must be between 4'7\" and 7'2\"";
-              } else if (maxCm - minCm < 5) {
-                errorMessage = "Height range should be at least 2 inches";
-              }
             }
           }
         } else if (field === "weight") {
@@ -456,19 +450,6 @@ const MatrimonialProfile = () => {
 
           if (minVal === null || maxVal === null) {
             errorMessage = "Invalid weight values selected";
-          } else if (minVal < 30) {
-            errorMessage = "Minimum weight must be at least 30kg";
-          } else if (maxVal > 200) {
-            errorMessage = "Maximum weight cannot exceed 200kg";
-          } else if (minVal > maxVal) {
-            errorMessage =
-              "Minimum weight cannot be greater than maximum weight";
-          } else if (minVal === maxVal) {
-            errorMessage = "Minimum and maximum weight cannot be the same";
-          } else if (maxVal - minVal > 50) {
-            errorMessage = "Weight range cannot exceed 50kg difference";
-          } else if (maxVal - minVal < 5) {
-            errorMessage = "Weight range should be at least 5kg";
           }
         }
       }
@@ -541,211 +522,216 @@ const MatrimonialProfile = () => {
   };
 
   const handleSavePreferences = async () => {
-    if (isLoading) return;
+  if (isLoading) return;
 
-    setIsLoading(true);
-    setSubmitError("");
-    setSubmitSuccess("");
+  setIsLoading(true);
+  setSubmitError("");
+  setSubmitSuccess("");
 
-    try {
-      if (!dataLoaded) {
-        setSubmitError("Please wait while data is being loaded...");
-        return;
-      }
+  try {
+    if (!dataLoaded) {
+      setSubmitError("Please wait while data is being loaded...");
+      return;
+    }
 
-      if (!navigator.onLine) {
-        setSubmitError(
-          "No internet connection. Please check your connection and try again."
-        );
-        return;
-      }
-
-      if (!validateAllFields()) {
-        const errorMessages = [];
-        Object.keys(errors).forEach((key) => {
-          if (errors[key]) {
-            const fieldLabel = key
-              .replace(/([A-Z])/g, " $1")
-              .replace(/^./, (str) => str.toUpperCase());
-            errorMessages.push(`${fieldLabel}: ${errors[key]}`);
-          }
-        });
-
-        setSubmitError(
-          errorMessages.length > 0
-            ? `Please fix the following issues:\n\n${errorMessages.join("\n")}`
-            : "Please fill in all required fields."
-        );
-        return;
-      }
-
-      const minAge = getAgeValue(preferences.ageRange.min);
-      const maxAge = getAgeValue(preferences.ageRange.max);
-
-      let minHeight = getHeightValue(
-        preferences.heightRange.min,
-        preferences.heightRange.unit
+    if (!navigator.onLine) {
+      setSubmitError(
+        "No internet connection. Please check your connection and try again."
       );
-      let maxHeight = getHeightValue(
-        preferences.heightRange.max,
-        preferences.heightRange.unit
-      );
+      return;
+    }
 
-      const minWeight = getWeightValue(preferences.weight.min);
-      const maxWeight = getWeightValue(preferences.weight.max);
-
-      if (minAge === null || maxAge === null) {
-        throw new Error("Invalid age values");
-      }
-      if (minHeight === null || maxHeight === null) {
-        throw new Error("Invalid height values");
-      }
-      if (minWeight === null || maxWeight === null) {
-        throw new Error("Invalid weight values");
-      }
-
-      const payloadData = {
-        minAge,
-        maxAge,
-        minHeight,
-        maxHeight,
-        heightUnit: preferences.heightRange.unit,
-        minWeight,
-        maxWeight,
-        weightUnit: "kg",
-        caste: preferences.caste,
-        religion: preferences.religion,
-        lifestyle: preferences.lifestyle,
-        state: preferences.location.state,
-        city: preferences.location.city,
-        sex: preferences.sex,
-        otherSex: preferences.otherSex || "",
-        educationLevel: preferences.educationLevel,
-        occupationType: preferences.occupationType,
-      };
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Authentication token not found. Please login again.");
-      }
-
-      const apiUrl = isEditMode
-        ? "/partnerpreference/update-preference"
-        : "/partnerpreference/create-preference";
-
-      const response = await axiosPublic({
-        method: isEditMode ? "PUT" : "POST",
-        url: apiUrl,
-        data: payloadData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 15000,
+    if (!validateAllFields()) {
+      const errorMessages = [];
+      Object.keys(errors).forEach((key) => {
+        if (errors[key]) {
+          const fieldLabel = key
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase());
+          errorMessages.push(`${fieldLabel}: ${errors[key]}`);
+        }
       });
 
-      if (response.status === 200 || response.status === 201) {
-        setSubmitSuccess("Partner preferences saved successfully!");
-        router.push("/Home");
-      } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error saving preferences:", error);
-
-      if (error.code === "ECONNABORTED") {
-        setSubmitError(
-          "Request timeout. Please check your internet connection and try again."
-        );
-      } else if (error.response?.status === 401) {
-        setSubmitError("Authentication failed. Please login again.");
-      } else if (error.response?.status === 400) {
-        setSubmitError(
-          "Invalid data provided. Please check your entries and try again."
-        );
-      } else if (error.response?.status >= 500) {
-        setSubmitError("Server error. Please try again later.");
-      } else if (error.message.includes("Invalid")) {
-        setSubmitError(error.message);
-      } else {
-        setSubmitError("Failed to save preferences. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
+      setSubmitError(
+        errorMessages.length > 0
+          ? `Please fix the following issues:\n\n${errorMessages.join("\n")}`
+          : "Please fill in all required fields."
+      );
+      return;
     }
-  };
 
-  useEffect(() => {
-    const loadEditData = async () => {
-      const isEdit = params.get('isEdit');
-      if (isEdit === "true") {
-        setIsEditMode(true);
-        try {
-          const storedData = localStorage.getItem("editData");
-          const editData = storedData
-            ? JSON.parse(storedData)
-            : params.editData
-            ? JSON.parse(decodeURIComponent(params.editData))
-            : null;
+    const minAge = getAgeValue(preferences.ageRange.min);
+    const maxAge = getAgeValue(preferences.ageRange.max);
 
-          if (editData) {
-            const casteOptions =
-              editData.religion?.toLowerCase() &&
-              apiData.caste[editData.religion.toLowerCase()];
+    // Get height values as strings (either "143 cm" or "4'0"")
+    const minHeightStr = preferences.heightRange.min;
+    const maxHeightStr = preferences.heightRange.max;
+    
+    // Determine if height is in cm or ft format
+    const isCmFormat = minHeightStr.includes("cm");
+    
+    // Prepare height values for payload
+    let minHeight, maxHeight;
+    if (isCmFormat) {
+      // For cm format, extract the numeric value
+      minHeight = minHeightStr.replace(" cm", "");
+      maxHeight = maxHeightStr.replace(" cm", "");
+    } else {
+      // For ft format, keep the original string (e.g., "4'0"")
+      minHeight = minHeightStr;
+      maxHeight = maxHeightStr;
+    }
 
-            setPreferences((prevPrefs) => ({
-              ...prevPrefs,
-              ageRange: {
-                min: editData.minAge ? `${editData.minAge} years` : "",
-                max: editData.maxAge ? `${editData.maxAge} years` : "",
-              },
-              heightRange: {
-                min:
-                  editData.minHeight !== null &&
-                  editData.minHeight !== undefined
-                    ? editData.heightUnit === "cm"
-                      ? `${editData.minHeight} cm`
-                      : cmToFt(editData.minHeight)
-                    : "",
-                max:
-                  editData.maxHeight !== null &&
-                  editData.maxHeight !== undefined
-                    ? editData.heightUnit === "cm"
-                      ? `${editData.maxHeight} cm`
-                      : cmToFt(editData.maxHeight)
-                    : "",
-                unit: editData.heightUnit || "cm",
-              },
-              weight: {
-                min: editData.minWeight ? `${editData.minWeight}` : "",
-                max: editData.maxWeight ? `${editData.maxWeight}` : "",
-              },
-              sex: editData.sex || "",
-              otherSex: editData.otherSex || "",
-              educationLevel: editData.educationLevel || "",
-              occupationType: editData.occupationType || "",
-              location: {
-                state: editData.state || "",
-                city: editData.city || "",
-              },
-              religion: editData.religion || "",
-              caste: casteOptions?.includes(editData.caste)
-                ? editData.caste
-                : "",
-              lifestyle: editData.lifestyle || "",
-            }));
+    const minWeight = getWeightValue(preferences.weight.min);
+    const maxWeight = getWeightValue(preferences.weight.max);
 
-            localStorage.removeItem("editData");
-          }
-        } catch (error) {
-          console.error("Error loading edit data:", error);
-          setSubmitError("Error loading existing data");
-        }
-      }
+    if (minAge === null || maxAge === null) {
+      throw new Error("Invalid age values");
+    }
+    if (!minHeight || !maxHeight) {
+      throw new Error("Invalid height values");
+    }
+    if (minWeight === null || maxWeight === null) {
+      throw new Error("Invalid weight values");
+    }
+
+    const payloadData = {
+      minAge,
+      maxAge,
+      minHeight,
+      maxHeight,
+    minWeight: preferences.weight.min ? `${preferences.weight.min} kg` : "",
+  maxWeight: preferences.weight.max ? `${preferences.weight.max} kg` : "",
+      caste: preferences.caste,
+      religion: preferences.religion,
+      lifestyle: preferences.lifestyle,
+      state: preferences.location.state,
+      city: preferences.location.city,
+      sex: preferences.sex,
+      otherSex: preferences.otherSex || "",
+      educationLevel: preferences.educationLevel,
+      occupation: preferences.occupationType,
     };
 
-    loadEditData();
-  }, [params]);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const apiUrl = isEditMode
+      ? "/partnerpreference/update-preference"
+      : "/partnerpreference/create-preference";
+
+    const response = await axiosPublic({
+      method: isEditMode ? "PUT" : "POST",
+      url: apiUrl,
+      data: payloadData,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      timeout: 15000,
+    });
+
+    if (response.status === 201) {
+      setSubmitSuccess("Partner preferences saved successfully!");
+      router.push("/Home");
+    } 
+    else if (response.status === 200){
+      setSubmitSuccess("Partner preferences saved successfully!");
+      router.back();
+    } else {
+      throw new Error(`Unexpected response status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error saving preferences:", error);
+
+    if (error.code === "ECONNABORTED") {
+      setSubmitError(
+        "Request timeout. Please check your internet connection and try again."
+      );
+    } else if (error.response?.status === 401) {
+      setSubmitError("Authentication failed. Please login again.");
+    } else if (error.response?.status === 400) {
+      setSubmitError(
+        "Invalid data provided. Please check your entries and try again."
+      );
+    } else if (error.response?.status >= 500) {
+      setSubmitError("Server error. Please try again later.");
+    } else if (error.message.includes("Invalid")) {
+      setSubmitError(error.message);
+    } else {
+      setSubmitError("Failed to save preferences. Please try again.");
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  const loadEditData = async () => {
+    const isEdit = params.get('isEdit');
+    if (isEdit === "true") {
+      setIsEditMode(true);
+      try {
+        const storedData = localStorage.getItem("editData");
+        const editData = storedData
+          ? JSON.parse(storedData)
+          : params.editData
+          ? JSON.parse(decodeURIComponent(params.editData))
+          : null;
+
+        if (editData) {
+          let minHeight, maxHeight;
+          if (editData.minHeight && editData.maxHeight) {
+            if (typeof editData.minHeight === 'number') {
+              minHeight = `${editData.minHeight} cm`;
+              maxHeight = `${editData.maxHeight} cm`;
+            } else {
+              minHeight = editData.minHeight;
+              maxHeight = editData.maxHeight;
+            }
+          }
+
+          setPreferences((prevPrefs) => ({
+            ...prevPrefs,
+            ageRange: {
+              min: editData.minAge ? `${editData.minAge} years` : "",
+              max: editData.maxAge ? `${editData.maxAge} years` : "",
+            },
+            heightRange: {
+              min: minHeight || "",
+              max: maxHeight || "",
+              unit: typeof editData.minHeight === 'number' ? "cm" : "ft"
+            },
+          weight: {
+        min: editData.minWeight ? parseInt(editData.minWeight.replace(" kg", "")) : "",
+        max: editData.maxWeight ? parseInt(editData.maxWeight.replace(" kg", "")) : ""
+      },
+            sex: editData.sex || "",
+            otherSex: editData.otherSex || "",
+            educationLevel: editData.educationLevel || "",
+            occupationType: editData.occupation || "", 
+            location: {
+              state: editData.state || "",
+              city: editData.city || "",
+            },
+            religion: editData.religion || "",
+            caste: editData.caste || "", 
+            lifestyle: editData.lifestyle || "",
+          }));
+        }
+        localStorage.removeItem("editData");
+      } catch (error) {
+        console.error("Error loading edit data:", error);
+        setSubmitError("Error loading existing data");
+      }
+    }
+  };
+   
+  loadEditData();
+}, [params]);
 
   const renderError = (error) => {
     if (!error) return null;
@@ -786,7 +772,7 @@ const MatrimonialProfile = () => {
             value={value}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled || isLoading}
-            className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-gray-50 appearance-none ${
+            className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-gray-50 text-black appearance-none ${
               disabled || isLoading
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer hover:border-red-300 hover:bg-red-50"
@@ -796,7 +782,7 @@ const MatrimonialProfile = () => {
           >
             <option value="">{placeholder}</option>
             {options.map((option) => (
-              <option key={option} value={option}>
+              <option key={option} value={option} className="text-black">
                 {option}
               </option>
             ))}
@@ -835,7 +821,7 @@ const MatrimonialProfile = () => {
               value={minValue}
               onChange={(e) => onMinChange(e.target.value)}
               disabled={isLoading}
-              className={`w-full px-4 py-3 border rounded-lg bg-gray-50 appearance-none ${
+              className={`w-full px-4 py-3 border rounded-lg bg-gray-50 text-black appearance-none ${
                 isLoading
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer hover:border-red-300 hover:bg-red-50"
@@ -843,9 +829,9 @@ const MatrimonialProfile = () => {
                 errors[errorKey] ? "border-red-300 bg-red-50" : "border-gray-300"
               }`}
             >
-              <option value="">{minPlaceholder}</option>
+              <option value="" className="text-black">{minPlaceholder}</option>
               {options.map((option) => (
-                <option key={`min-${option}`} value={option}>
+                <option key={`min-${option}`} value={option} className="text-black">
                   {option}
                 </option>
               ))}
@@ -859,7 +845,7 @@ const MatrimonialProfile = () => {
               value={maxValue}
               onChange={(e) => onMaxChange(e.target.value)}
               disabled={isLoading}
-              className={`w-full px-4 py-3 border rounded-lg bg-gray-50 appearance-none ${
+              className={`w-full px-4 py-3 border rounded-lg bg-gray-50 text-black appearance-none ${
                 isLoading
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer hover:border-red-300 hover:bg-red-50"
@@ -867,9 +853,9 @@ const MatrimonialProfile = () => {
                 errors[errorKey] ? "border-red-300 bg-red-50" : "border-gray-300"
               }`}
             >
-              <option value="">{maxPlaceholder}</option>
+              <option value="" className="black">{maxPlaceholder}</option>
               {options.map((option) => (
-                <option key={`max-${option}`} value={option}>
+                <option key={`max-${option}`} value={option} className="text-black">
                   {option}
                 </option>
               ))}
@@ -948,26 +934,23 @@ const MatrimonialProfile = () => {
                 />
               </div>
 
-              <RangeSelectField
-                label="Weight Range (kg)"
-                minValue={
-                  preferences.weight.min ? `${preferences.weight.min} kg` : ""
-                }
-                maxValue={
-                  preferences.weight.max ? `${preferences.weight.max} kg` : ""
-                }
-                onMinChange={(value) =>
-                  handleSelectChange("weight", value.replace(" kg", ""), "min")
-                }
-                onMaxChange={(value) =>
-                  handleSelectChange("weight", value.replace(" kg", ""), "max")
-                }
-                options={apiData.weight}
-                minPlaceholder="Min Weight"
-                maxPlaceholder="Max Weight"
-                errorKey="weight"
-              />
-
+         <RangeSelectField
+  label="Weight Range"
+  minValue={preferences.weight.min ? `${preferences.weight.min} kg` : ""}
+  maxValue={preferences.weight.max ? `${preferences.weight.max} kg` : ""}
+  onMinChange={(value) => {
+    const numValue = value ? parseInt(value.replace(" kg", "")) : "";
+    handleSelectChange("weight", numValue, "min");
+  }}
+  onMaxChange={(value) => {
+    const numValue = value ? parseInt(value.replace(" kg", "")) : "";
+    handleSelectChange("weight", numValue, "max");
+  }}
+  options={apiData.weight} // Should be ["40 kg", "41 kg", ...]
+  minPlaceholder="Min Weight"
+  maxPlaceholder="Max Weight"
+  errorKey="weight"
+/>
               <SelectField
                 label="Gender"
                 value={preferences.sex}

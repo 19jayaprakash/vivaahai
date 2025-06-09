@@ -319,7 +319,7 @@ const ScheduleMeetScreen = () => {
               {["S", "M", "T", "W", "T", "F", "S"].map((day, i) => (
                 <div
                   key={i}
-                  className="text-center text-gray-500 text-sm font-medium py-1"
+                  className="text-center text-black text-sm font-medium py-1"
                 >
                   {day}
                 </div>
@@ -338,7 +338,7 @@ const ScheduleMeetScreen = () => {
                     ${
                       isSelected(day)
                         ? "bg-indigo-500 text-white"
-                        : "hover:bg-gray-100"
+                        : "hover:bg-gray-100 text-black"
                     }
                   `}
                 >
@@ -386,7 +386,7 @@ const ScheduleMeetScreen = () => {
                     <button
                       key={hour}
                       onClick={() => setSelectedHour(hour)}
-                      className={`w-12 py-2 cursor-pointer  rounded-md text-sm font-medium transition-colors
+                      className={`w-12 py-2 cursor-pointer  rounded-md text-sm text-black font-medium transition-colors
                         ${
                           selectedHour === hour
                             ? "bg-[#FF6B6B] text-white"
@@ -406,7 +406,7 @@ const ScheduleMeetScreen = () => {
                     <button
                       key={minute}
                       onClick={() => setSelectedMinute(minute)}
-                      className={`w-12 py-2 cursor-pointer  rounded-md text-sm font-medium transition-colors
+                      className={`w-12 py-2 cursor-pointer text-black rounded-md text-sm font-medium transition-colors
                         ${
                           selectedMinute === minute
                             ? "bg-[#FF6B6B] text-white"
@@ -424,7 +424,7 @@ const ScheduleMeetScreen = () => {
                 <div className="h-32 overflow-y-auto scrollbar-hide">
                   <button
                     onClick={() => setIsAM(true)}
-                    className={`w-12 py-2 cursor-pointer  rounded-md text-sm font-medium transition-colors
+                    className={`w-12 py-2 cursor-pointer  text-black rounded-md text-sm font-medium transition-colors
                       ${isAM ? "bg-[#FF6B6B] text-white" : "hover:bg-gray-200"}
                     `}
                   >
@@ -524,7 +524,7 @@ const ScheduleMeetScreen = () => {
                 >
                   <div className="flex items-center gap-2">
                     <LuCalendar size={16} className="text-indigo-500" />
-                    <span className="text-sm font-medium truncate">
+                    <span className="text-sm font-medium truncate text-black">
                       {selectedDate.toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -549,7 +549,7 @@ const ScheduleMeetScreen = () => {
                 >
                   <div className="flex items-center gap-2">
                     <LuClock size={16} className="text-pink-500" />
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-black">
                       {formatTime(selectedTime)}
                     </span>
                   </div>

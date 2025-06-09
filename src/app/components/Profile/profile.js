@@ -32,32 +32,32 @@ export default function ProfileCreation() {
     {
       id: 0,
       title: 'Basic Details',
-      icon: <User className="w-5 h-5" />,
+      icon: <User className="w-5 h-5 text-black" />,
       description: 'Personal information'
     },
     {
       id: 1,
       title: 'Professional Details',
-      icon: <Briefcase className="w-5 h-5" />,
+      icon: <Briefcase className="w-5 h-5  text-black" />,
       description: 'Career information'
     },
     {
       id: 2,
       title: 'Family',
-      icon: <Users className="w-5 h-5" />,
+      icon: <Users className="w-5 h-5  text-black" />,
       description: 'Family background'
       
     },
     {
       id: 3,
       title: 'Interests',
-      icon: <Star className="w-5 h-5" />,
+      icon: <Star className="w-5 h-5  text-black" />,
       description: 'Hobbies & interests'
     },
     {
       id: 4,
       title: 'Partner Preference',
-      icon: <Search className="w-5 h-5" />,
+      icon: <Search className="w-5 h-5  text-black" />,
       description: 'Ideal partner criteria'
     }
   ];
@@ -197,7 +197,7 @@ export default function ProfileCreation() {
             </p>
           </div>
           <div>
-            <span className='mr-3'>Hi ,{name}</span>
+            <span className='mr-3  text-black'>Hi ,{name}</span>
            <button className='bg-[#FF6B6B] p-1 text-black rounded-md cursor-pointer transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"' onClick={()=>{router.push("/")}}>Logout</button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function ProfileCreation() {
                   
                 </div>
                 <div className=''>
-               <span className='text-sm'> {step.title} </span>
+               <span className='text-sm text-black'> {step.title} </span>
                  </div>
                 </div>
                 {index < steps.length - 1 && (

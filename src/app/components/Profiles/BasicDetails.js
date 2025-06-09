@@ -72,6 +72,11 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [errors, setErrors] = useState({
+    height: '',
+    weight: ''
+  });
+
   // Fetch Mother Tongue Options
   useEffect(() => {
     async function fetchMotherTongue() {
@@ -381,14 +386,46 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
     fetchUser();
   }, []);
 
+ const validateFields = () => {
+    let valid = true;
+    const newErrors = {
+      height: '',
+      weight: ''
+    };
+
+    if (formData.height && parseInt(formData.height) < 140) {
+      newErrors.height = 'Minimum height should be 140cm';
+      valid = false;
+    }
+
+    if (formData.weight && parseInt(formData.weight) < 25) {
+      newErrors.weight = 'Minimum weight should be 25kg';
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    return valid;
+  };
+
   const handleChange = (field, value) => {
     setFormData(prevData => ({
       ...prevData,
       [field]: value,
     }));
+
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   };
 
   const handleSubmit = async () => {
+    if (!validateFields()) {
+      return;
+    }
+
     setLoading(true);
     try {
       const submissionData = {
@@ -442,7 +479,6 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
       setLoading(false);
     }
   };
-
   const countries = ['India'];
 
   return (
@@ -655,52 +691,61 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
           </div>
  
           {/* Physical Attributes */}
-          <div className="bg-gray-100 backdrop-blur-sm border border-[#FF6B6B]/30 rounded-2xl p-6 hover:border-[#FF6B6B]/50 transition-all duration-300">
-            <div className="flex items-center mb-6">
-              <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-[#FF6B6B]">Physical Attributes</h2>
-            </div>
- 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="text-[#FF6B6B] font-medium">Height (cm)</label>
-                <input
-                  type="number"
-                  value={formData.height}
-                  onChange={(e) => handleChange('height', e.target.value)}
-                  className="w-full px-4 py-3 border border-[#FF6B6B]/30 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all duration-300"
-                  placeholder="Height in cm"
-                />
-              </div>
- 
-              <div className="space-y-2">
-                <label className="text-[#FF6B6B] font-medium">Weight (kg)</label>
-                <input
-                  type="number"
-                  value={formData.weight}
-                  onChange={(e) => handleChange('weight', e.target.value)}
-                  className="w-full px-4 py-3  border border-[#FF6B6B]/30 rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all duration-300"
-                  placeholder="Weight in kg"
-                />
-              </div>
- 
-              <div className="space-y-2">
-                <label className="text-[#FF6B6B] font-medium">Body Type</label>
-                <select
-                  value={formData.bodyType}
-                  onChange={(e) => handleChange('bodyType', e.target.value)}
-                  className="w-full px-4 py-3  border border-[#FF6B6B]/30 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all duration-300 appearance-none"
-                >
-                  <option value="" className="bg-black/10">Select Body Type</option>
-                  {bodyTypeOptions.map((bodyType, index) => (
-                    <option key={index} value={bodyType?.toLowerCase()} className="bg-black/10">{bodyType}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
+        <div className="bg-gray-100 backdrop-blur-sm border border-[#FF6B6B]/30 rounded-2xl p-6 hover:border-[#FF6B6B]/50 transition-all duration-300">
+    <div className="flex items-center mb-6">
+      <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
+        <Activity className="w-6 h-6 text-white" />
+      </div>
+      <h2 className="text-2xl font-bold text-[#FF6B6B]">Physical Attributes</h2>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="space-y-2">
+        <label className="text-[#FF6B6B] font-medium">Height (cm)</label>
+        <input
+          type="number"
+          value={formData.height}
+          onChange={(e) => handleChange('height', e.target.value)}
+          min="140"
+          className={`w-full px-4 py-3 border ${errors.height ? 'border-red-500' : 'border-[#FF6B6B]/30'} rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all duration-300`}
+          placeholder="Height in cm (min 140cm)"
+        />
+        {errors.height && (
+          <p className="text-red-500 text-sm mt-1">{errors.height}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-[#FF6B6B] font-medium">Weight (kg)</label>
+        <input
+          type="number"
+          value={formData.weight}
+          onChange={(e) => handleChange('weight', e.target.value)}
+          min="25"
+          className={`w-full px-4 py-3 border ${errors.weight ? 'border-red-500' : 'border-[#FF6B6B]/30'} rounded-lg text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all duration-300`}
+          placeholder="Weight in kg (min 25kg)"
+        />
+        {errors.weight && (
+          <p className="text-red-500 text-sm mt-1">{errors.weight}</p>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-[#FF6B6B] font-medium">Body Type</label>
+        <select
+          value={formData.bodyType}
+          onChange={(e) => handleChange('bodyType', e.target.value)}
+          className="w-full px-4 py-3  border border-[#FF6B6B]/30 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all duration-300 appearance-none"
+        >
+          <option value="" className="bg-black/10">Select Body Type</option>
+          {bodyTypeOptions.map((bodyType, index) => (
+            <option key={index} value={bodyType?.toLowerCase()} className="bg-black/10">{bodyType}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  </div>
+
           {/* Family & Relationship */}
           <div className="bg-gray-100 backdrop-blur-sm border border-[#FF6B6B]/30 rounded-2xl p-6 hover:border-[#FF6B6B]/50 transition-all duration-300">
             <div className="flex items-center mb-6">
