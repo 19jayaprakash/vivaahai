@@ -40,7 +40,7 @@ const MatrimonyDrivesApp = () => {
       description: "Connect with tech professionals from leading companies. This exclusive event brings together software engineers, product managers, and tech leaders from top companies in Chennai.",
       attendees: 150,
       image: "tech",
-      category: "Technology"
+      category: "Technologyy"
     },
     {
       id: 2,
