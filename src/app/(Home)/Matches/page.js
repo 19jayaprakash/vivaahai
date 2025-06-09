@@ -746,6 +746,7 @@ import React, { useState } from 'react';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, Heart, SlidersHorizontal, X, Sparkles, Plane, Waves, Phone, MessageCircle, Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 // Sample data for matches with working image URLs
 const dummyMatches = [
   {
@@ -1047,13 +1048,13 @@ const ScheduleMeetModal = ({ isOpen, onClose, matchName }) => {
  
   const handleSchedule = () => {
     if (selectedDate && selectedTime) {
-      alert(`Meeting scheduled with ${matchName} on ${selectedDate} at ${selectedTime} via ${meetingType} call`);
+      toast.done(`Meeting scheduled with ${matchName} on ${selectedDate} at ${selectedTime} via ${meetingType} call`);
       onClose();
       setSelectedDate('');
       setSelectedTime('');
       setMeetingType('video');
     } else {
-      alert('Please select date and time');
+      toast.error('Please select date and time');
     }
   };
  
@@ -1181,17 +1182,14 @@ const MatchCard = ({ match }) => {
  
   const handleSendInterest = (e) => {
     e.stopPropagation();
-    alert(`Interest sent to ${match.name}!`);
   };
  
   const handleDontShow = (e) => {
     e.stopPropagation();
-    alert(`${match.name} hidden from matches`);
   };
  
   const handleContact = (e, type) => {
     e.stopPropagation();
-    alert(`Contacting ${match.name} via ${type}`);
   };
  
   return (
@@ -1228,14 +1226,14 @@ const MatchCard = ({ match }) => {
             <div className="flex gap-2 ml-2">
               <button
                 onClick={(e) => handleContact(e, 'phone')}
-                className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center hover:bg-orange-200 transition-colors"
+                className="w-8  cursor-pointer h-8 bg-orange-100 rounded-full flex items-center justify-center hover:bg-orange-200 transition-colors"
                 title="Contact"
               >
                 <Phone size={14} className="text-orange-600" />
               </button>
               <button
                 onClick={(e) => handleContact(e, 'WhatsApp')}
-                className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors"
+                className="w-8 h-8 cursor-pointer bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors"
                 title="WhatsApp"
               >
                 <MessageCircle size={14} className="text-green-600" />

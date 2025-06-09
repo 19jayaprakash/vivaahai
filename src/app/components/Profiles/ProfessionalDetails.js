@@ -10,7 +10,7 @@ const FormField = ({ label, icon: Icon, children, required = false }) => (
   <div className="relative group">
     {/* Label moved above the input field */}
     {label && (
-      <label className="block text-black/80 text-sm font-medium mb-2">
+      <label className="block text-[#FF6B6B] text-sm font-medium mb-2">
         {label}
         {required && <span className="text-[#FF6B6B] ml-1">*</span>}
       </label>
@@ -318,8 +318,8 @@ const fetchEducationOptions = async () => {
   };
  
  return (
-  <div className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div className="space-y-6 ">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30">
       {/* Education Dropdown */}
       <FormField label="Education Level" icon={GraduationCap} required>
         <CustomSelect
@@ -403,11 +403,11 @@ const fetchEducationOptions = async () => {
     {/* Career Description Textarea */}
    
                  {/* Submit Button */}
-                          <div className="flex justify-center pt-8">
+                          <div className="flex justify-center pt-8 mb-6">
                             <button
                               onClick={handleSubmit}
                               disabled={loading}
-                              className="group relative px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                              className="group relative cursor-pointer px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             >
                               <div className="flex items-center space-x-3">
                                 {loading ? (

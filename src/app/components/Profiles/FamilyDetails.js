@@ -3,9 +3,10 @@ import { useState, useEffect } from 'react';
 import { CheckCircle, ChevronRight, ChevronsRight, Home, Trash2, Users } from 'lucide-react';
 import { axiosPublic } from '../../base/constant';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 const FormSection = ({ title, icon, children }) => (
-  <div className="w-full bg-white rounded-xl p-6 mb-6 shadow-lg border border-gray-100">
+  <div className="w-full bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 mb-6">
     <div className="flex items-center mb-6">
       <div className="bg-[#FF6B6B] rounded-full p-3 mr-4">
         {icon}
@@ -38,7 +39,7 @@ const CustomSelect = ({ value, onChange, options, placeholder }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-full border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:border-[#FF6B6B] focus:ring-2 focus:ring-[#FF6B6B]/20 outline-none transition-all text-black"
+    className="w-full border cursor-pointer border-gray-300 rounded-lg px-4 py-3 bg-gray-50 focus:bg-white focus:border-[#FF6B6B] focus:ring-2 focus:ring-[#FF6B6B]/20 outline-none transition-all text-black"
   >
     <option value="" disabled>{placeholder}</option>
     {options.map((option, index) => (
@@ -125,7 +126,6 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
       });
       
       const result = response.data;
-      console.log('Fetched family details:', result);
       
       if (result) {
         const familyData = result;
@@ -154,7 +154,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
       }
     } catch (error) {
       console.error('Error fetching family details:', error);
-      alert('Error fetching family details. Please try again.');
+      toast.error('Error fetching family details. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -233,7 +233,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
       }));
     } else {
       console.log("Sibling data is empty");
-      alert("Please fill all sibling details before adding.");
+      toast.error("Please fill all sibling details before adding.");
     }
   };
 
@@ -262,7 +262,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
       });
 
       const result = response;
-      console.log('Response:', result);
+      toast.success("Family details added successfully!!!")
       
       // Show success message based on mode
       if (isEditMode) {
@@ -276,7 +276,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
       
     } catch (error) {
       console.error('Error:', error);
-      alert('Error saving family details. Please try again.');
+      toast.error('Error saving family details. Please try again.');
     }
     finally{
         setLoading(false);
@@ -295,7 +295,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
     
 
       {/* Main Content */}
@@ -372,7 +372,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
                     </div>
                     <button
                       onClick={() => deleteSibling(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 cursor-pointer text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -449,7 +449,7 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
 
                   <button
                     onClick={addSibling}
-                    className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-4 px-6 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
+                    className="w-full cursor-pointer bg-gray-700 hover:bg-gray-800 text-white font-bold py-4 px-6 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2"
                   >
                     <Users size={20} />
                     Add Sibling
@@ -461,11 +461,11 @@ const MatrimonialProfile = ({ isEdit = false,nextStep }) => {
         </FormSection>
 
         {/* Submit Button */}
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-8 mb-6">
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="group relative px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="group relative cursor-pointer px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <div className="flex items-center space-x-3">
                 {loading ? (

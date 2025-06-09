@@ -14,6 +14,7 @@ import {
   FiCoffee,
 } from "react-icons/fi";
 import { CheckCircle, ChevronsRight } from "lucide-react";
+import { toast } from "react-toastify";
 
 const SEX_OPTIONS = ["Male", "Female", "Others"];
 const LIFESTYLE_TYPES = ["Modern", "Ethnic", "Traditional"];
@@ -58,16 +59,36 @@ const MatrimonialProfile = () => {
   const params = useSearchParams();
   const router = useRouter();
 
-
   const toggleHeightUnit = () => {
     const newUnit = preferences.heightRange.unit === "cm" ? "ft" : "cm";
+
+    // Convert existing values if they exist
+    let newMin = "";
+    let newMax = "";
+
+    if (preferences.heightRange.min && preferences.heightRange.max) {
+      if (newUnit === "ft") {
+        // Convert cm to ft
+        const minCm = parseInt(preferences.heightRange.min.replace(" cm", ""));
+        const maxCm = parseInt(preferences.heightRange.max.replace(" cm", ""));
+        newMin = cmToFt(minCm);
+        newMax = cmToFt(maxCm);
+      } else {
+        // Convert ft to cm
+        const minCm = ftToCm(preferences.heightRange.min);
+        const maxCm = ftToCm(preferences.heightRange.max);
+        newMin = `${minCm} cm`;
+        newMax = `${maxCm} cm`;
+      }
+    }
+
     setPreferences((prev) => ({
       ...prev,
       heightRange: {
         ...prev.heightRange,
         unit: newUnit,
-        min: "",
-        max: "",
+        min: newMin,
+        max: newMax,
       },
     }));
   };
@@ -303,142 +324,110 @@ const MatrimonialProfile = () => {
     }
   };
 
-  const validateField = (fieldName, value) => {
-    let errorMessage = "";
+  // const validateField = (fieldName, value) => {
+  //   let errorMessage = "";
 
-    try {
-      switch (fieldName) {
-        case "sex":
-          if (!value || value.trim() === "") {
-            errorMessage = "Please select a gender";
-          }
-          break;
+  //   try {
+  //     switch (fieldName) {
+  //       case "sex":
+  //         if (!value || value.trim() === "") {
+  //           errorMessage = "Please select a gender";
+  //         }
+  //         break;
 
-        case "otherSex":
-          if (preferences.sex === "Others" && (!value || value.trim() === "")) {
-            errorMessage = "Please specify your gender";
-          } else if (preferences.sex === "Others" && value.trim().length < 2) {
-            errorMessage = "Please enter at least 2 characters";
-          }
-          break;
+  //       case "otherSex":
+  //         if (preferences.sex === "Others" && (!value || value.trim() === "")) {
+  //           errorMessage = "Please specify your gender";
+  //         } else if (preferences.sex === "Others" && value.trim().length < 2) {
+  //           errorMessage = "Please enter at least 2 characters";
+  //         }
+  //         break;
 
-        case "educationLevel":
-          if (!value || value.trim() === "") {
-            errorMessage = "Please select your education level";
-          }
-          break;
+  //       case "educationLevel":
+  //         if (!value || value.trim() === "") {
+  //           errorMessage = "Please select your education level";
+  //         }
+  //         break;
 
-        case "occupationType":
-          if (!value || value.trim() === "") {
-            errorMessage = "Please select your occupation type";
-          }
-          break;
+  //       case "occupationType":
+  //         if (!value || value.trim() === "") {
+  //           errorMessage = "Please select your occupation type";
+  //         }
+  //         break;
 
-        case "state":
-          if (!value || value.trim() === "") {
-            errorMessage = "Please select a state";
-          }
-          break;
+  //       case "state":
+  //         if (!value || value.trim() === "") {
+  //           errorMessage = "Please select a state";
+  //         }
+  //         break;
 
-        case "city":
-          if (!value || value.trim() === "") {
-            if (preferences.location.state) {
-              errorMessage = "Please select a city";
-            }
-          }
-          break;
+  //       case "city":
+  //         if (!value || value.trim() === "") {
+  //           if (preferences.location.state) {
+  //             errorMessage = "Please select a city";
+  //           }
+  //         }
+  //         break;
 
-        case "religion":
-          if (!value || value.trim() === "") {
-            errorMessage = "Please select a religion";
-          }
-          break;
+  //       case "religion":
+  //         if (!value || value.trim() === "") {
+  //           errorMessage = "Please select a religion";
+  //         }
+  //         break;
 
-        case "caste":
-          if (preferences.religion && (!value || value.trim() === "")) {
-            errorMessage = "Please select a caste";
-          }
-          break;
+  //       case "caste":
+  //         if (preferences.religion && (!value || value.trim() === "")) {
+  //           errorMessage = "Please select a caste";
+  //         }
+  //         break;
 
-        case "lifestyle":
-          if (!value || value.trim() === "") {
-            errorMessage = "Please select a lifestyle preference";
-          }
-          break;
-      }
+  //       case "lifestyle":
+  //         if (!value || value.trim() === "") {
+  //           errorMessage = "Please select a lifestyle preference";
+  //         }
+  //         break;
+  //     }
 
-      setErrors((prev) => ({
-        ...prev,
-        [fieldName]: errorMessage,
-      }));
+  //     setErrors((prev) => ({
+  //       ...prev,
+  //       [fieldName]: errorMessage,
+  //     }));
 
-      return errorMessage === "";
-    } catch (error) {
-      console.error("Error validating field:", fieldName, error);
-      return false;
-    }
-  };
+  //     return errorMessage === "";
+  //   } catch (error) {
+  //     console.error("Error validating field:", fieldName, error);
+  //     return false;
+  //   }
+  // };
 
   const validateRange = (field, values) => {
     try {
       const { min, max } = values;
       let errorMessage = "";
 
-      if (!min && !max) {
-        errorMessage = `Please select both minimum and maximum ${field.replace(
-          "Range",
-          ""
-        )} values`;
-      } else if (!min) {
-        errorMessage = `Please select minimum ${field.replace(
-          "Range",
-          ""
-        )} value`;
-      } else if (!max) {
-        errorMessage = `Please select maximum ${field.replace(
-          "Range",
-          ""
-        )} value`;
-      } else {
         let minVal, maxVal;
 
         if (field === "ageRange") {
           minVal = getAgeValue(min);
           maxVal = getAgeValue(max);
 
-          if (minVal === null || maxVal === null) {
-            errorMessage = "Invalid age values selected";
-          } else if (minVal < 18) {
-            errorMessage = "Minimum age must be at least 18 years";
-          } else if (maxVal > 100) {
+           if (maxVal > 100) {
             errorMessage = "Maximum age cannot exceed 100 years";
           } else if (minVal > maxVal) {
             errorMessage = "Minimum age cannot be greater than maximum age";
-          } else if (minVal === maxVal) {
-            errorMessage = "Minimum and maximum age cannot be the same";
-          } else if (maxVal - minVal > 30) {
+          } if (maxVal - minVal > 30) {
             errorMessage = "Age range cannot exceed 30 years difference";
-          } else if (maxVal - minVal < 2) {
-            errorMessage = "Age range should be at least 2 years";
           }
         } else if (field === "heightRange") {
           minVal = getHeightValue(min, preferences.heightRange.unit);
           maxVal = getHeightValue(max, preferences.heightRange.unit);
 
-          if (minVal === null || maxVal === null) {
-            errorMessage = "Invalid height values selected";
-          } else if (minVal > maxVal) {
+          if (minVal > maxVal) {
             errorMessage =
               "Minimum height cannot be greater than maximum height";
-          } else if (minVal === maxVal) {
-            errorMessage = "Minimum and maximum height cannot be the same";
           } else {
             if (preferences.heightRange.unit === "cm") {
-              if (minVal < 140 || maxVal > 220) {
-                errorMessage = "Height must be between 140cm and 220cm";
-              } else if (maxVal - minVal < 5) {
-                errorMessage = "Height range should be at least 5cm";
-              }
+             //
             } else {
               const minCm = ftToCm(min);
               const maxCm = ftToCm(max);
@@ -447,11 +436,6 @@ const MatrimonialProfile = () => {
         } else if (field === "weight") {
           minVal = getWeightValue(min);
           maxVal = getWeightValue(max);
-
-          if (minVal === null || maxVal === null) {
-            errorMessage = "Invalid weight values selected";
-          }
-        }
       }
 
       setErrors((prev) => ({
@@ -474,34 +458,34 @@ const MatrimonialProfile = () => {
     try {
       let isValid = true;
 
-      const fieldsToValidate = [
-        "sex",
-        "educationLevel",
-        "occupationType",
-        "religion",
-        "lifestyle",
-      ];
+      // const fieldsToValidate = [
+      //   "sex",
+      //   "educationLevel",
+      //   "occupationType",
+      //   "religion",
+      //   "lifestyle",
+      // ];
 
-      fieldsToValidate.forEach((field) => {
-        const fieldValue = preferences[field];
-        if (!validateField(field, fieldValue)) {
-          isValid = false;
-        }
-      });
+      // fieldsToValidate.forEach((field) => {
+      //   const fieldValue = preferences[field];
+      //   if (!validateField(field, fieldValue)) {
+      //     isValid = false;
+      //   }
+      // });
 
-      if (!validateField("state", preferences.location.state)) {
-        isValid = false;
-      }
-      if (!validateField("city", preferences.location.city)) {
-        isValid = false;
-      }
+      // if (!validateField("state", preferences.location.state)) {
+      //   isValid = false;
+      // }
+      // if (!validateField("city", preferences.location.city)) {
+      //   isValid = false;
+      // }
 
-      if (!validateField("otherSex", preferences.otherSex)) {
-        isValid = false;
-      }
-      if (!validateField("caste", preferences.caste)) {
-        isValid = false;
-      }
+      // if (!validateField("otherSex", preferences.otherSex)) {
+      //   isValid = false;
+      // }
+      // if (!validateField("caste", preferences.caste)) {
+      //   isValid = false;
+      // }
 
       const rangeValidations = [
         validateRange("ageRange", preferences.ageRange),
@@ -522,215 +506,213 @@ const MatrimonialProfile = () => {
   };
 
   const handleSavePreferences = async () => {
-  if (isLoading) return;
+    if (isLoading) return;
 
-  setIsLoading(true);
-  setSubmitError("");
-  setSubmitSuccess("");
+    setIsLoading(true);
+    setSubmitError("");
+    setSubmitSuccess("");
 
-  try {
-    if (!dataLoaded) {
-      setSubmitError("Please wait while data is being loaded...");
-      return;
-    }
+    try {
+      if (!dataLoaded) {
+        setSubmitError("Please wait while data is being loaded...");
+        return;
+      }
 
-    if (!navigator.onLine) {
-      setSubmitError(
-        "No internet connection. Please check your connection and try again."
-      );
-      return;
-    }
+      if (!navigator.onLine) {
+        setSubmitError(
+          "No internet connection. Please check your connection and try again."
+        );
+        return;
+      }
 
-    if (!validateAllFields()) {
-      const errorMessages = [];
-      Object.keys(errors).forEach((key) => {
-        if (errors[key]) {
-          const fieldLabel = key
-            .replace(/([A-Z])/g, " $1")
-            .replace(/^./, (str) => str.toUpperCase());
-          errorMessages.push(`${fieldLabel}: ${errors[key]}`);
-        }
+      if (!validateAllFields()) {
+        const errorMessages = [];
+        Object.keys(errors).forEach((key) => {
+          if (errors[key]) {
+            const fieldLabel = key
+              .replace(/([A-Z])/g, " $1")
+              .replace(/^./, (str) => str.toUpperCase());
+            errorMessages.push(`${fieldLabel}: ${errors[key]}`);
+          }
+        });
+
+        setSubmitError(
+          errorMessages.length > 0
+            ? `Please fix the following issues:\n\n${errorMessages.join("\n")}`
+            : "Please fill in all required fields."
+        );
+        return;
+      }
+
+      const minAge = getAgeValue(preferences.ageRange.min);
+      const maxAge = getAgeValue(preferences.ageRange.max);
+
+      const minHeightStr = preferences.heightRange.min;
+      const maxHeightStr = preferences.heightRange.max;
+
+      const isCmFormat = minHeightStr.includes("cm");
+
+      let minHeight, maxHeight;
+      if (isCmFormat) {
+        minHeight = minHeightStr.replace(" cm", "");
+        maxHeight = maxHeightStr.replace(" cm", "");
+      } else {
+        minHeight = minHeightStr;
+        maxHeight = maxHeightStr;
+      }
+
+      const minWeight = getWeightValue(preferences.weight.min);
+      const maxWeight = getWeightValue(preferences.weight.max);
+
+      
+
+      const payloadData = {
+        minAge,
+        maxAge,
+        minHeight,
+        maxHeight,
+        minWeight: preferences.weight.min ? `${preferences.weight.min} kg` : "",
+        maxWeight: preferences.weight.max ? `${preferences.weight.max} kg` : "",
+        caste: preferences.caste,
+        religion: preferences.religion,
+        lifestyle: preferences.lifestyle,
+        state: preferences.location.state,
+        city: preferences.location.city,
+        sex: preferences.sex,
+        otherSex: preferences.otherSex || "",
+        educationLevel: preferences.educationLevel,
+        occupation: preferences.occupationType,
+      };
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication token not found. Please login again.");
+      }
+
+      const apiUrl = isEditMode
+        ? "/partnerpreference/update-preference"
+        : "/partnerpreference/create-preference";
+
+      const response = await axiosPublic({
+        method: isEditMode ? "PUT" : "POST",
+        url: apiUrl,
+        data: payloadData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: 15000,
       });
 
-      setSubmitError(
-        errorMessages.length > 0
-          ? `Please fix the following issues:\n\n${errorMessages.join("\n")}`
-          : "Please fill in all required fields."
-      );
-      return;
-    }
-
-    const minAge = getAgeValue(preferences.ageRange.min);
-    const maxAge = getAgeValue(preferences.ageRange.max);
-
-    // Get height values as strings (either "143 cm" or "4'0"")
-    const minHeightStr = preferences.heightRange.min;
-    const maxHeightStr = preferences.heightRange.max;
-    
-    // Determine if height is in cm or ft format
-    const isCmFormat = minHeightStr.includes("cm");
-    
-    // Prepare height values for payload
-    let minHeight, maxHeight;
-    if (isCmFormat) {
-      // For cm format, extract the numeric value
-      minHeight = minHeightStr.replace(" cm", "");
-      maxHeight = maxHeightStr.replace(" cm", "");
-    } else {
-      // For ft format, keep the original string (e.g., "4'0"")
-      minHeight = minHeightStr;
-      maxHeight = maxHeightStr;
-    }
-
-    const minWeight = getWeightValue(preferences.weight.min);
-    const maxWeight = getWeightValue(preferences.weight.max);
-
-    if (minAge === null || maxAge === null) {
-      throw new Error("Invalid age values");
-    }
-    if (!minHeight || !maxHeight) {
-      throw new Error("Invalid height values");
-    }
-    if (minWeight === null || maxWeight === null) {
-      throw new Error("Invalid weight values");
-    }
-
-    const payloadData = {
-      minAge,
-      maxAge,
-      minHeight,
-      maxHeight,
-    minWeight: preferences.weight.min ? `${preferences.weight.min} kg` : "",
-  maxWeight: preferences.weight.max ? `${preferences.weight.max} kg` : "",
-      caste: preferences.caste,
-      religion: preferences.religion,
-      lifestyle: preferences.lifestyle,
-      state: preferences.location.state,
-      city: preferences.location.city,
-      sex: preferences.sex,
-      otherSex: preferences.otherSex || "",
-      educationLevel: preferences.educationLevel,
-      occupation: preferences.occupationType,
-    };
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      throw new Error("Authentication token not found. Please login again.");
-    }
-
-    const apiUrl = isEditMode
-      ? "/partnerpreference/update-preference"
-      : "/partnerpreference/create-preference";
-
-    const response = await axiosPublic({
-      method: isEditMode ? "PUT" : "POST",
-      url: apiUrl,
-      data: payloadData,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      timeout: 15000,
-    });
-
-    if (response.status === 201) {
-      setSubmitSuccess("Partner preferences saved successfully!");
-      router.push("/Home");
-    } 
-    else if (response.status === 200){
-      setSubmitSuccess("Partner preferences saved successfully!");
-      router.back();
-    } else {
-      throw new Error(`Unexpected response status: ${response.status}`);
-    }
-  } catch (error) {
-    console.error("Error saving preferences:", error);
-
-    if (error.code === "ECONNABORTED") {
-      setSubmitError(
-        "Request timeout. Please check your internet connection and try again."
-      );
-    } else if (error.response?.status === 401) {
-      setSubmitError("Authentication failed. Please login again.");
-    } else if (error.response?.status === 400) {
-      setSubmitError(
-        "Invalid data provided. Please check your entries and try again."
-      );
-    } else if (error.response?.status >= 500) {
-      setSubmitError("Server error. Please try again later.");
-    } else if (error.message.includes("Invalid")) {
-      setSubmitError(error.message);
-    } else {
-      setSubmitError("Failed to save preferences. Please try again.");
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-
-useEffect(() => {
-  const loadEditData = async () => {
-    const isEdit = params.get('isEdit');
-    if (isEdit === "true") {
-      setIsEditMode(true);
-      try {
-        const storedData = localStorage.getItem("editData");
-        const editData = storedData
-          ? JSON.parse(storedData)
-          : params.editData
-          ? JSON.parse(decodeURIComponent(params.editData))
-          : null;
-
-        if (editData) {
-          let minHeight, maxHeight;
-          if (editData.minHeight && editData.maxHeight) {
-            if (typeof editData.minHeight === 'number') {
-              minHeight = `${editData.minHeight} cm`;
-              maxHeight = `${editData.maxHeight} cm`;
-            } else {
-              minHeight = editData.minHeight;
-              maxHeight = editData.maxHeight;
-            }
-          }
-
-          setPreferences((prevPrefs) => ({
-            ...prevPrefs,
-            ageRange: {
-              min: editData.minAge ? `${editData.minAge} years` : "",
-              max: editData.maxAge ? `${editData.maxAge} years` : "",
-            },
-            heightRange: {
-              min: minHeight || "",
-              max: maxHeight || "",
-              unit: typeof editData.minHeight === 'number' ? "cm" : "ft"
-            },
-          weight: {
-        min: editData.minWeight ? parseInt(editData.minWeight.replace(" kg", "")) : "",
-        max: editData.maxWeight ? parseInt(editData.maxWeight.replace(" kg", "")) : ""
-      },
-            sex: editData.sex || "",
-            otherSex: editData.otherSex || "",
-            educationLevel: editData.educationLevel || "",
-            occupationType: editData.occupation || "", 
-            location: {
-              state: editData.state || "",
-              city: editData.city || "",
-            },
-            religion: editData.religion || "",
-            caste: editData.caste || "", 
-            lifestyle: editData.lifestyle || "",
-          }));
-        }
-        localStorage.removeItem("editData");
-      } catch (error) {
-        setSubmitError("Error loading existing data");
+      if (response.status === 201) {
+        toast.success("Partner preferences saved successfully!");
+        router.push("/Home");
+      } else if (response.status === 200) {
+        toast.success("Partner preferences saved successfully!");
+        router.back();
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`);
       }
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+
+      if (error.code === "ECONNABORTED") {
+        setSubmitError(
+          "Request timeout. Please check your internet connection and try again."
+        );
+      } else if (error.response?.status === 401) {
+        setSubmitError("Authentication failed. Please login again.");
+      } else if (error.response?.status === 400) {
+        setSubmitError(
+          "Invalid data provided. Please check your entries and try again."
+        );
+      } else if (error.response?.status >= 500) {
+        setSubmitError("Server error. Please try again later.");
+      } else if (error.message.includes("Invalid")) {
+        setSubmitError(error.message);
+      } else {
+        setSubmitError("Failed to save preferences. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
-   
-  loadEditData();
-}, [params]);
+
+  useEffect(() => {
+    const loadEditData = async () => {
+      const isEdit = params.get("isEdit");
+      if (isEdit === "true") {
+        setIsEditMode(true);
+        try {
+          const storedData = localStorage.getItem("editData");
+          const editData = storedData
+            ? JSON.parse(storedData)
+            : params.editData
+            ? JSON.parse(decodeURIComponent(params.editData))
+            : null;
+
+          if (editData) {
+            let minHeight, maxHeight, heightUnit;
+
+            if (typeof editData.minHeight === "number") {
+              heightUnit = "cm";
+              minHeight = `${editData.minHeight} cm`;
+              maxHeight = `${editData.maxHeight} cm`;
+            } else if (
+              typeof editData.minHeight === "string" &&
+              editData.minHeight.includes("'")
+            ) {
+              heightUnit = "ft";
+              minHeight = editData.minHeight;
+              maxHeight = editData.maxHeight;
+            } else {
+              heightUnit = "cm";
+              minHeight = editData.minHeight ? `${editData.minHeight} cm` : "";
+              maxHeight = editData.maxHeight ? `${editData.maxHeight} cm` : "";
+            }
+
+            setPreferences((prevPrefs) => ({
+              ...prevPrefs,
+              ageRange: {
+                min: editData.minAge ? `${editData.minAge} years` : "",
+                max: editData.maxAge ? `${editData.maxAge} years` : "",
+              },
+              heightRange: {
+                min: minHeight || "",
+                max: maxHeight || "",
+                unit: heightUnit,
+              },
+              weight: {
+                min: editData.minWeight
+                  ? editData.minWeight.replace(" kg", "")
+                  : "",
+                max: editData.maxWeight
+                  ? editData.maxWeight.replace(" kg", "")
+                  : "",
+              },
+              sex: editData.sex || "",
+              otherSex: editData.otherSex || "",
+              educationLevel: editData.educationLevel || "",
+              occupationType: editData.occupation || "",
+              location: {
+                state: editData.state || "",
+                city: editData.city || "",
+              },
+              religion: editData.religion || "",
+              caste: editData.caste || "",
+              lifestyle: editData.lifestyle || "",
+            }));
+          }
+          localStorage.removeItem("editData");
+        } catch (error) {
+          console.error("Error loading edit data:", error);
+          setSubmitError("Error loading existing data");
+        }
+      }
+    };
+
+    loadEditData();
+  }, [params]);
 
   const renderError = (error) => {
     if (!error) return null;
@@ -756,14 +738,16 @@ useEffect(() => {
     return (
       <div className="mb-6">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-[#FF6B6B] mb-2">
             {label} {<span className="text-red-500">*</span>}
           </label>
         )}
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Icon
-              className={`${errors[errorKey] ? "text-red-500" : "text-gray-400"}`}
+              className={`${
+                errors[errorKey] ? "text-red-500" : "text-gray-400"
+              }`}
               size={18}
             />
           </div>
@@ -771,7 +755,7 @@ useEffect(() => {
             value={value}
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled || isLoading}
-            className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-gray-50 text-black appearance-none ${
+            className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-gray-100 text-black appearance-none ${
               disabled || isLoading
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer hover:border-red-300 hover:bg-red-50"
@@ -809,8 +793,8 @@ useEffect(() => {
   }) => {
     return (
       <div className="mb-6">
-       {showLabel && (
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        {showLabel && (
+          <label className="block text-sm font-medium text-[#FF6B6B] mb-2">
             {label} <span className="text-red-500">*</span>
           </label>
         )}
@@ -820,17 +804,25 @@ useEffect(() => {
               value={minValue}
               onChange={(e) => onMinChange(e.target.value)}
               disabled={isLoading}
-              className={`w-full px-4 py-3 border rounded-lg bg-gray-50 text-black appearance-none ${
+              className={`w-full px-4 py-3 border rounded-lg bg-gray-100 text-black appearance-none ${
                 isLoading
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer hover:border-red-300 hover:bg-red-50"
               } ${
-                errors[errorKey] ? "border-red-300 bg-red-50" : "border-gray-300"
+                errors[errorKey]
+                  ? "border-red-300 bg-red-50"
+                  : "border-gray-300"
               }`}
             >
-              <option value="" className="text-black">{minPlaceholder}</option>
+              <option value="" className="text-black">
+                {minPlaceholder}
+              </option>
               {options.map((option) => (
-                <option key={`min-${option}`} value={option} className="text-black">
+                <option
+                  key={`min-${option}`}
+                  value={option}
+                  className="text-black"
+                >
                   {option}
                 </option>
               ))}
@@ -844,17 +836,25 @@ useEffect(() => {
               value={maxValue}
               onChange={(e) => onMaxChange(e.target.value)}
               disabled={isLoading}
-              className={`w-full px-4 py-3 border rounded-lg bg-gray-50 text-black appearance-none ${
+              className={`w-full px-4 py-3 border rounded-lg bg-gray-100 text-black appearance-none ${
                 isLoading
                   ? "opacity-50 cursor-not-allowed"
                   : "cursor-pointer hover:border-red-300 hover:bg-red-50"
               } ${
-                errors[errorKey] ? "border-red-300 bg-red-50" : "border-gray-300"
+                errors[errorKey]
+                  ? "border-red-300 bg-red-50"
+                  : "border-gray-300"
               }`}
             >
-              <option value="" className="black">{maxPlaceholder}</option>
+              <option value="" className="black">
+                {maxPlaceholder}
+              </option>
               {options.map((option) => (
-                <option key={`max-${option}`} value={option} className="text-black">
+                <option
+                  key={`max-${option}`}
+                  value={option}
+                  className="text-black"
+                >
                   {option}
                 </option>
               ))}
@@ -870,13 +870,15 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen ">
+      <div className="max-w-4xl mx-auto">
         <div className="space-y-6">
-          <div className="bg-gray-100 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-100 px-6 py-4">
-              <div className="flex items-center">
-                <FiUser className="text-red-500 mr-3" size={20} />
+          <div className="bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 overflow-hidden">
+            <div className="bg-gray-100 px-6">
+               <div className="flex items-center mb-2">
+                            <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
+                              <FiUser className="w-6 h-6 text-white" />
+                            </div>
                 <h3 className="text-xl text-[#FF6B6B] font-semibold">
                   Basic Details
                 </h3>
@@ -901,8 +903,8 @@ useEffect(() => {
 
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Height Range  <span className="text-red-500">*</span>
+                  <label className="block text-sm font-medium text-[#FF6B6B]">
+                    Height Range <span className="text-red-500">*</span>
                   </label>
                   <button
                     onClick={toggleHeightUnit}
@@ -933,23 +935,31 @@ useEffect(() => {
                 />
               </div>
 
-         <RangeSelectField
-  label="Weight Range"
-  minValue={preferences.weight.min ? `${preferences.weight.min} kg` : ""}
-  maxValue={preferences.weight.max ? `${preferences.weight.max} kg` : ""}
-  onMinChange={(value) => {
-    const numValue = value ? parseInt(value.replace(" kg", "")) : "";
-    handleSelectChange("weight", numValue, "min");
-  }}
-  onMaxChange={(value) => {
-    const numValue = value ? parseInt(value.replace(" kg", "")) : "";
-    handleSelectChange("weight", numValue, "max");
-  }}
-  options={apiData.weight} // Should be ["40 kg", "41 kg", ...]
-  minPlaceholder="Min Weight"
-  maxPlaceholder="Max Weight"
-  errorKey="weight"
-/>
+              <RangeSelectField
+                label="Weight Range"
+                minValue={
+                  preferences.weight.min ? `${preferences.weight.min} kg` : ""
+                }
+                maxValue={
+                  preferences.weight.max ? `${preferences.weight.max} kg` : ""
+                }
+                onMinChange={(value) => {
+                  const numValue = value
+                    ? parseInt(value.replace(" kg", ""))
+                    : "";
+                  handleSelectChange("weight", numValue, "min");
+                }}
+                onMaxChange={(value) => {
+                  const numValue = value
+                    ? parseInt(value.replace(" kg", ""))
+                    : "";
+                  handleSelectChange("weight", numValue, "max");
+                }}
+                options={apiData.weight} // Should be ["40 kg", "41 kg", ...]
+                minPlaceholder="Min Weight"
+                maxPlaceholder="Max Weight"
+                errorKey="weight"
+              />
               <SelectField
                 label="Gender"
                 value={preferences.sex}
@@ -957,7 +967,7 @@ useEffect(() => {
                 options={SEX_OPTIONS}
                 placeholder="Select Gender"
                 icon={FiUser}
-                required
+                // required
                 errorKey="sex"
               />
 
@@ -984,10 +994,12 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="bg-gray-100 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-100 px-6 py-4">
-              <div className="flex items-center">
-                <FiBriefcase className="text-red-500 mr-3" size={20} />
+          <div className="bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 overflow-hidden">
+            <div className="bg-gray-100 px-6">
+             <div className="flex items-center mb-2">
+                            <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
+                              <FiBriefcase className="w-6 h-6 text-white" />
+                            </div>
                 <h3 className="text-xl text-[#FF6B6B] font-semibold">
                   Education & Career
                 </h3>
@@ -997,31 +1009,37 @@ useEffect(() => {
               <SelectField
                 label="Education Level"
                 value={preferences.educationLevel}
-                onChange={(value) => handleSelectChange("educationLevel", value)}
+                onChange={(value) =>
+                  handleSelectChange("educationLevel", value)
+                }
                 options={apiData.education_level}
                 placeholder="Select Education Level"
                 icon={FiBriefcase}
-                required
+                // required
                 errorKey="educationLevel"
               />
 
               <SelectField
                 label="Occupation Type"
                 value={preferences.occupationType}
-                onChange={(value) => handleSelectChange("occupationType", value)}
+                onChange={(value) =>
+                  handleSelectChange("occupationType", value)
+                }
                 options={apiData.occupation}
                 placeholder="Select Occupation Type"
                 icon={FiBriefcase}
-                required
+                // required
                 errorKey="occupationType"
               />
             </div>
           </div>
 
-          <div className="bg-gray-100 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-100 px-6 py-4">
-              <div className="flex items-center">
-                <FiMapPin className="text-red-500 mr-3" size={20} />
+          <div className="bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 overflow-hidden">
+            <div className="bg-gray-100 px-6">
+              <div className="flex items-center mb-2">
+                            <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
+                              <FiMapPin className="w-6 h-6 text-white" />
+                            </div>
                 <h3 className="text-xl text-[#FF6B6B] font-semibold">
                   Location
                 </h3>
@@ -1032,12 +1050,16 @@ useEffect(() => {
                 label="State"
                 value={preferences.location.state}
                 onChange={(value) =>
-                  handleSelectChange("location", { ...preferences.location, state: value, city: "" }, null)
+                  handleSelectChange(
+                    "location",
+                    { ...preferences.location, state: value, city: "" },
+                    null
+                  )
                 }
                 options={apiData.state}
                 placeholder="Select State"
                 icon={FiMapPin}
-                required
+                // required
                 errorKey="state"
               />
 
@@ -1045,11 +1067,19 @@ useEffect(() => {
                 label="City"
                 value={preferences.location.city}
                 onChange={(value) =>
-                  handleSelectChange("location", { ...preferences.location, city: value }, null)
+                  handleSelectChange(
+                    "location",
+                    { ...preferences.location, city: value },
+                    null
+                  )
                 }
                 options={
                   preferences.location.state
-                    ? apiData.city[preferences.location.state.toLowerCase().replace(/\s+/g, "_")] || []
+                    ? apiData.city[
+                        preferences.location.state
+                          .toLowerCase()
+                          .replace(/\s+/g, "_")
+                      ] || []
                     : []
                 }
                 placeholder={
@@ -1059,16 +1089,18 @@ useEffect(() => {
                 }
                 icon={FiHome}
                 disabled={!preferences.location.state}
-                required={!!preferences.location.state}
+                // required={!!preferences.location.state}
                 errorKey="city"
               />
             </div>
           </div>
 
-          <div className="bg-gray-100 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-100 px-6 py-4">
-              <div className="flex items-center">
-                <FiGlobe className="text-red-500 mr-3" size={20} />
+          <div className="bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 overflow-hidden">
+            <div className="bg-gray-100 px-6">
+              <div className="flex items-center mb-2">
+                            <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
+                              <FiGlobe className="w-6 h-6 text-white" />
+                            </div>
                 <h3 className="text-xl text-[#FF6B6B] font-semibold">
                   Cultural & Religious Background
                 </h3>
@@ -1085,7 +1117,7 @@ useEffect(() => {
                 options={apiData.religion}
                 placeholder="Select Religion"
                 icon={FiGlobe}
-                required
+                // required
                 errorKey="religion"
               />
 
@@ -1105,16 +1137,18 @@ useEffect(() => {
                 }
                 icon={FiUsers}
                 disabled={!preferences.religion}
-                required={!!preferences.religion}
+                // required={!!preferences.religion}
                 errorKey="caste"
               />
             </div>
           </div>
 
-          <div className="bg-gray-100 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gray-100 px-6 py-4">
-              <div className="flex items-center">
-                <FiCoffee className="text-red-500 mr-3" size={20} />
+          <div className="bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 overflow-hidden">
+            <div className="bg-gray-100 px-6 ">
+             <div className="flex items-center mb-2">
+                            <div className="p-3 bg-[#FF6B6B] rounded-full mr-4 shadow-lg">
+                              <FiCoffee className="w-6 h-6 text-white" />
+                            </div>
                 <h3 className="text-xl text-[#FF6B6B] font-semibold">
                   Lifestyle Preferences
                 </h3>
@@ -1128,14 +1162,14 @@ useEffect(() => {
                 options={apiData.lifestyle}
                 placeholder="Select Lifestyle"
                 icon={FiCoffee}
-                required
+                // required
                 errorKey="lifestyle"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex justify-center pt-8">
+        <div className="flex justify-center pt-8 mb-6">
           <button
             onClick={handleSavePreferences}
             type="submit"

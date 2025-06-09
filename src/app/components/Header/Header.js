@@ -138,10 +138,10 @@ export default function Header() {
                   <div className="text-sm text-gray-600 px-4">
                     Hi, {firstName}
                   </div>
-                  <button className="w-full bg-[#FF6B6B] hover:bg-[#e55a5a] text-white px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200 flex items-center justify-center space-x-2"  onClick={handleLogout}>
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
-                  </button>
+                  <button className="bg-[#FF6B6B] hover:bg-[#e55a5a] text-white px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 flex items-center cursor-pointer space-x-1" onClick={handleLogout}>
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
                 </div>
               </div>
             </div>
@@ -177,10 +177,10 @@ export default function Header() {
           </nav>
  
           {/* User Section */}
-          <button className="bg-[#FF6B6B] hover:bg-[#e55a5a] text-white px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 flex items-center space-x-1"  onClick={handleLogout}>
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </button>
+         <button className="bg-[#FF6B6B] hover:bg-[#e55a5a] text-white px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 flex items-center cursor-pointer space-x-1" onClick={handleLogout}>
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
         </div>
       </div>
  

@@ -171,7 +171,7 @@ const StepperSection = ({
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+                  <h2 className="text-2xl font-bold text-[#FF6B6B]">{title}</h2>
                   <div className="flex items-center space-x-2 mt-1">
                     <div className="flex items-center">
                       <div className="w-2 h-2 bg-[#FF6B6B] rounded-full"></div>

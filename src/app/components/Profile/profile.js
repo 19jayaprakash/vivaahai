@@ -176,7 +176,7 @@ export default function ProfileCreation() {
   };
 
   return (
-    <div className="min-h-screen bg-white p-4">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 ">
       {/* Header */}
       <div className="relative z-10 bg-gray-50">
         <div className="container mx-auto px-4 py-6 flex justify-between">
@@ -198,7 +198,7 @@ export default function ProfileCreation() {
           </div>
           <div>
             <span className='mr-3  text-black'>Hi ,{name}</span>
-           <button className='bg-[#FF6B6B] p-1 text-black rounded-md cursor-pointer transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"' onClick={()=>{router.push("/")}}>Logout</button>
+           <button className='bg-[#FF6B6B] p-1 text-white h-8 w-18 rounded-md cursor-pointer transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"' onClick={()=>{router.push("/")}}>Logout</button>
           </div>
         </div>
       </div>

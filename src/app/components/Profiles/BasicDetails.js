@@ -19,6 +19,7 @@ import {
 import { axiosPublic } from '../../base/constant';
 import Toast from './ToastComponent';
 import {useRouter} from 'next/navigation';
+import { toast } from 'react-toastify';
 
 const MatrimonialProfile = ({nextStep,isEdit = false}) => {
     const router = useRouter();
@@ -455,7 +456,7 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
       });
 
       if (response.status === 200) {
-        setToastMessage('Basic profile details have been added successfully!');
+        toast.success('Basic profile details have been added successfully!');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
         nextStep();
@@ -466,13 +467,13 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
           router.back();
         }
       } else {
-        setToastMessage('Failed to add profile. Please try again.');
+        toast.error('Failed to add profile. Please try again.');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
       }
     } catch (error) {
       console.error('Error submitting profile:', error);
-      setToastMessage('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     } finally {
@@ -483,7 +484,7 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
 
   return (
     <>
-    <div className="min-h-screen bg-white text-black relative overflow-hidden">
+    <div className="min-h-screen text-black relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-20 h-20 bg-[#FF6B6B] rounded-full opacity-10 animate-bounce"></div>
@@ -967,11 +968,11 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
          
  
           {/* Submit Button */}
-          <div className="flex justify-center pt-8">
+          <div className="flex justify-center pt-8 mb-6">
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="group relative px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="group cursor-pointer relative px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <div className="flex items-center space-x-3">
                 {loading ? (

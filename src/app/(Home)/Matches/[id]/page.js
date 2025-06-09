@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useRouter, useParams} from 'next/navigation';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
  
 // Sample profile data - in real app this would come from props/API
 const profileData = {
@@ -100,14 +101,14 @@ const PhotoGallery = ({ photos }) => {
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all duration-300"
+              className="absolute cursor-pointer left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all duration-300"
             >
               <ChevronLeft size={18} />
             </button>
  
             <button
               onClick={handleNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all duration-300"
+              className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-all duration-300"
             >
               <ChevronRight size={18} />
             </button>
@@ -117,7 +118,7 @@ const PhotoGallery = ({ photos }) => {
                 <button
                   key={index}
                   onClick={() => setActiveIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 cursor-pointer rounded-full transition-all duration-300 ${
                     index === activeIndex
                       ? 'bg-white w-6'
                       : 'bg-white/50 hover:bg-white/80'
@@ -179,10 +180,10 @@ const PhotoGallery = ({ photos }) => {
 const InfoCard = ({ title, children, icon: Icon }) => (
   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl flex items-center justify-center">
-        <Icon size={20} className="text-rose-600" />
+      <div className="w-10 h-10 bg-[#FF6B6B] rounded-xl flex items-center justify-center">
+        <Icon size={20} className="text-white" />
       </div>
-      <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+      <h3 className="text-lg font-bold text-[#FF6B6B]">{title}</h3>
     </div>
     {children}
   </div>
@@ -202,7 +203,7 @@ const ProfileViewPage = () => {
   };
  
   const handleSendInterest = () => {
-    alert(`Interest sent to ${profileData.name}!`);
+    toast.success(`Interest sent to ${profileData.name}!`);
   };
  
   const handleScheduleMeet = () => {
@@ -223,10 +224,10 @@ const ProfileViewPage = () => {
           </button>
          
           <div className="flex items-center gap-3">
-            <button className="p-2 rounded-full bg-orange-100 hover:bg-orange-200 transition-colors">
+            <button className="p-2 rounded-full cursor-pointer bg-orange-100 hover:bg-orange-200 transition-colors">
               <Phone size={18} className="text-orange-600" />
             </button>
-            <button className="p-2 rounded-full bg-green-100 hover:bg-green-200 transition-colors">
+            <button className="p-2 rounded-full cursor-pointer bg-green-100 hover:bg-green-200 transition-colors">
               <MessageCircle size={18} className="text-green-600" />
             </button>
           </div>
@@ -243,14 +244,14 @@ const ProfileViewPage = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleSendInterest}
-                className="bg-gradient-to-r from-rose-500 to-pink-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-rose-600 hover:to-pink-700 transition-all duration-200 flex items-center justify-center gap-2"
+                className="bg-gradient-to-r cursor-pointer from-rose-500 to-pink-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-rose-600 hover:to-pink-700 transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Heart size={16} />
                 Send Interest
               </button>
               <button
                 onClick={handleScheduleMeet}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
+                className="bg-gradient-to-r cursor-pointer from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Calendar size={16} />
                 Schedule Meet
@@ -280,7 +281,7 @@ const ProfileViewPage = () => {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
+                    <h1 className="text-2xl font-bold text-[#FF6B6B]">{profileData.name}</h1>
                     {profileData.isVerified && (
                       <div className="flex items-center gap-1 bg-blue-100 px-2 py-1 rounded-full">
                         <Shield size={12} className="text-blue-600" />
@@ -306,7 +307,7 @@ const ProfileViewPage = () => {
  
               {profileData.aboutMe && (
                 <div className="border-t pt-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">About Me</h4>
+                  <h4 className="font-semibold text-[#FF6B6B] mb-2">About Me</h4>
                   <p className="text-gray-700 leading-relaxed">{profileData.aboutMe}</p>
                 </div>
               )}
@@ -416,7 +417,7 @@ const ProfileViewPage = () => {
                 {profileData.interests.map((interest, index) => (
                   <span
                     key={index}
-                    className="bg-gradient-to-r from-rose-100 to-pink-100 text-rose-800 px-3 py-1 rounded-full text-sm font-medium"
+                    className="bg-[#FF6B6B] text-white px-3 py-1 rounded-full text-sm font-medium"
                   >
                     {interest}
                   </span>

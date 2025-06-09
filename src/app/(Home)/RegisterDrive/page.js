@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const DriveRegistrationPage = () => {
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ const DriveRegistrationPage = () => {
 
   const handleSubmit = async () => {
     if (!driveData) {
-      alert('Drive information not available');
+      toast.error('Drive information not available');
       return;
     }
 
@@ -56,35 +57,34 @@ const DriveRegistrationPage = () => {
         case 'paid':
           result = await callPaymentGateway(driveData.id, driveData.registrationFee);
           if (result.success) {
-            alert(`Payment completed successfully! Transaction ID: ${result.transactionId}`);
+            toast.success(`Payment completed successfully! Transaction ID: ${result.transactionId}`);
           }
           break;
 
         case 'free':
           result = await callRegisterApi(driveData.id);
           if (result.success) {
-            alert(`You have been registered for this drive! Registration ID: ${result.registrationId}`);
+            toast.success(`You have been registered for this drive! Registration ID: ${result.registrationId}`);
           }
           break;
 
         case 'invitation':
           result = await callRequestInvitationApi(driveData.id);
           if (result.success) {
-            alert(`Your invitation request has been submitted! Request ID: ${result.requestId}`);
+            toast.success(`Your invitation request has been submitted! Request ID: ${result.requestId}`);
           }
           break;
 
         default:
-          alert('Invalid drive type');
+          toast.warning('Invalid drive type');
           return;
       }
 
       if (!result.success) {
-        alert('Operation failed. Please try again.');
+        toast.error('Operation failed. Please try again.');
       }
     } catch (error) {
-      console.error('Error during operation:', error);
-      alert('Something went wrong. Please try again.');
+      toast.info('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

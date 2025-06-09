@@ -17,6 +17,7 @@ import {
 import { axiosPublic } from '../../base/constant';
 import Toast from './ToastComponent';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 
 // Mock API function - replace with your actual API implementation
@@ -45,7 +46,7 @@ const SelectableTagList = ({
           return (
             <button
               key={index}
-              className={`${backgroundColor} ${textColor} border border-[#FF6B6B] rounded-full px-4 py-2 text-sm whitespace-nowrap hover:opacity-80 transition-opacity`}
+              className={`${backgroundColor} ${textColor} cursor-pointer border border-[#FF6B6B] rounded-full px-4 py-2 text-sm whitespace-nowrap hover:opacity-80 transition-opacity`}
               onClick={() => handlePress(item, selectedItems, setSelectedItems)}
             >
               {item}
@@ -57,7 +58,7 @@ const SelectableTagList = ({
       {items.length > 20 && (
         <div className="flex items-center justify-center">
           <button 
-            className="text-[#FF6B6B] underline hover:text-[#FF6B6B]-800"
+            className="text-[#FF6B6B] cursor-pointer underline hover:text-[#FF6B6B]-800"
             onClick={() => setShowAll(!showAll)}
           >
             {showAll ? "Show Less" : "Show More"}
@@ -69,9 +70,9 @@ const SelectableTagList = ({
 };
 
 const FormSection = ({ title, icon, children }) => (
-  <div className="w-full mb-6 shadow-sm shadow-gray-500 bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 transition-all duration-300">
+  <div className="w-full mb-6 bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 transition-all duration-300">
     <div className="flex items-center mb-4">
-      <div className="border border-[#FF6B6B] bg-white rounded-full p-2 mr-3">
+      <div className="bg-[#FF6B6B] rounded-full p-2 mr-3">
         {icon}
       </div>
       <h2 className="text-lg font-bold text-[#FF6B6B]">
@@ -311,13 +312,13 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
     })
     .then(res =>{
       if(res.status === 201){
-        setToastMessage('Your Interest details have been added successfully!');
+        toast.success('Your Interest details have been added successfully!');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
         nextStep();
       }
       else if(res.status === 200 ){
-        setToastMessage('Your Interest details have been updated successfully!');
+        toast.success('Your Interest details have been updated successfully!');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
         router.back();
@@ -325,7 +326,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
     })
     .catch(err =>{
       console.error("Error updating profile:", err);
-      setToastMessage('Failed to add profile. Please try again.');
+      toast.error('Failed to add profile. Please try again.');
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     })
@@ -364,7 +365,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Hobbies/Interests */}
           <SelectableTagList
             title="Hobbies & Interests"
-            icon={<Headphones size={24} color="#FF6B6B" />}
+            icon={<Headphones size={24} color="white" />}
             items={hobbies}
             selectedItems={selectedHobbies}
             setSelectedItems={setSelectedHobbies}
@@ -374,7 +375,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Travel Preferences */}
           <SelectableTagList
             title="Travel Preferences"
-            icon={<Plane size={24} color="#FF6B6B" />}
+            icon={<Plane size={24} color="white" />}
             items={travelPreferences}
             selectedItems={selectedTravel}
             setSelectedItems={setSelectedTravel}
@@ -384,7 +385,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Music / Movies Tastes */}
           <SelectableTagList
             title="Music / Movies Tastes"
-            icon={<Music size={24} color="#FF6B6B" />}
+            icon={<Music size={24} color="white" />}
             items={musicMovieTastes}
             selectedItems={selectedMusic}
             setSelectedItems={setSelectedMusic}
@@ -394,7 +395,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Sports and Fitness Activities */}
           <SelectableTagList
             title="Sports and Fitness Activities"
-            icon={<Activity size={24} color="#FF6B6B" />}
+            icon={<Activity size={24} color="white" />}
             items={fitnessActivities}
             selectedItems={selectedFitness}
             setSelectedItems={setSelectedFitness}
@@ -404,7 +405,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Social causes of interest */}
           <SelectableTagList
             title="Social causes of interest"
-            icon={<Globe size={24} color="#FF6B6B" />}
+            icon={<Globe size={24} color="white" />}
             items={socialCauses}
             selectedItems={selectedCause}
             setSelectedItems={setSelectedCause}
@@ -414,7 +415,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Habits */}
           <SelectableTagList
             title="Habits"
-            icon={<Wine size={24} color="#FF6B6B" />}
+            icon={<Wine size={24} color="white" />}
             items={habits}
             selectedItems={selectedHabits}
             setSelectedItems={setSelectedHabits}
@@ -424,7 +425,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Diet Preferences */}
           <SelectableTagList
             title="Diet Preferences"
-            icon={<Salad size={24} color="#FF6B6B" />}
+            icon={<Salad size={24} color="white" />}
             items={dietPreference}
             selectedItems={selectedDiets}
             setSelectedItems={setSelectedDiets}
@@ -434,7 +435,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Cuisine Preference */}
           <SelectableTagList
             title="Cuisine Preferences"
-            icon={<UtensilsCrossed size={24} color="#FF6B6B" />}
+            icon={<UtensilsCrossed size={24} color="white" />}
             items={cuisinePreference}
             selectedItems={selectedCuisines}
             setSelectedItems={setSelectedCuisines}
@@ -444,7 +445,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
           {/* Languages Known */}
           <SelectableTagList
             title="Languages Known"
-            icon={<Languages size={24} color="#FF6B6B" />}
+            icon={<Languages size={24} color="white" />}
             items={knownLanguages}
             selectedItems={selectedLanguages}
             setSelectedItems={setSelectedLanguages}
@@ -456,7 +457,7 @@ const api = isEdit ? `/Interests/update-user-interests` : `/Interests/user-inter
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="group relative px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="group cursor-pointer relative px-12 py-4 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full text-black font-bold text-lg shadow-2xl hover:shadow-[#FF6B6B]/50 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <div className="flex items-center space-x-3">
                 {loading ? (

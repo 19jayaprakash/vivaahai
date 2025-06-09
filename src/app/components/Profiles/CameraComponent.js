@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, Upload, Edit, X, User, Check, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 
 const ProfileImageEditor = () => {
   const [profileImage, setProfileImage] = useState(null);
@@ -34,7 +35,7 @@ const ProfileImageEditor = () => {
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
-      alert('Unable to access camera. Please check permissions or try uploading a file instead.');
+      toast.error('Unable to access camera. Please check permissions or try uploading a file instead.');
     }
   };
 
@@ -103,7 +104,7 @@ const ProfileImageEditor = () => {
         };
         reader.readAsDataURL(file);
       } else {
-        alert('Please select a valid image file.');
+        toast.error('Please select a valid image file.');
       }
     }
   };

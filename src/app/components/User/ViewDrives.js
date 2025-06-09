@@ -104,10 +104,19 @@ const HorizontalDrivesCarousel = () => {
  
   return (
     <div className="py-6">
-      <div className="px-6 mb-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Upcoming Drives</h2>
-        <p className="text-gray-600">Discover and join amazing community drives</p>
-      </div>
+      <div className='flex justify-between items-center px-6 mb-4'>
+  <div>
+    <h2 className="text-2xl font-bold text-gray-800 mb-2">Upcoming Drives</h2>
+    <p className="text-gray-600">Discover and join amazing community drives</p>
+  </div>
+  <button
+    className="bg-pink-500 text-white font-semibold px-5 py-2 rounded-xl cursor-pointer shadow-md hover:bg-pink-600 hover:scale-105 transition-transform duration-300 ease-in-out"
+    onClick={() => router.push('/UserDrive')}
+    >
+    My Drives
+  </button>
+</div>
+ 
  
       <div
         ref={scrollViewRef}
