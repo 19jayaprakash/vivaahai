@@ -306,7 +306,7 @@ export default function MatrimonyLanding() {
           <div className="bg-white/95 backdrop-blur-md rounded-3xl max-w-md w-full border border-gray-200 shadow-2xl relative max-h-[90vh] flex flex-col">
             <button
               onClick={toggleAuthModal}
-              className="absolute top-4 right-4 text-gray-400 hover:text-black text-2xl transition-colors z-10"
+              className="absolute cursor-pointer top-4 right-4 text-gray-400 hover:text-black text-2xl transition-colors z-10"
             >
               ×
             </button>
@@ -352,7 +352,7 @@ export default function MatrimonyLanding() {
                         placeholder="Password"
                         className="w-full bg-gray-50 border border-gray-300 rounded-xl py-3 px-12 text-black placeholder-gray-500 focus:outline-none focus:border-[#FF6B6B] focus:bg-white transition-all"
                       />
-                      <div className='absolute right-0 top-0 cursor-pointer p-3'>
+                      <div className='absolute text-black right-0 top-0 cursor-pointer p-3'>
                       {showPassword ? <Eye onClick={()=>{setShowPassword(prev => !prev)}} /> : <EyeOff onClick={()=>{setShowPassword(prev => !prev)}}  />}
                       </div>
                     </div>

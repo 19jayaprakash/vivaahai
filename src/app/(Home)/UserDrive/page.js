@@ -24,6 +24,7 @@ import {
   Bell,
   Settings
 } from 'lucide-react';
+import { toast } from 'react-toastify';
  
 const MatrimonyDrivesApp = () => {
   const [drives, setDrives] = useState([
@@ -171,7 +172,7 @@ const MatrimonyDrivesApp = () => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      alert('Drive information updated!');
+      toast.info('Drive information updated!');
     }, 1500);
   };
  
@@ -186,7 +187,7 @@ const MatrimonyDrivesApp = () => {
       } else {
         const text = `Check out this matrimony drive: ${drive.name} on ${formatDate(drive.date)} at ${drive.location}`;
         await navigator.clipboard.writeText(text);
-        alert('Event details copied to clipboard!');
+        toast.info('Event details copied to clipboard!');
       }
     } catch (error) {
       console.log('Error sharing:', error);
@@ -245,7 +246,8 @@ const MatrimonyDrivesApp = () => {
     const CategoryIcon = getCategoryIcon(selectedDrive.category);
    
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+     <div className="fixed inset-0 bg-black/1 bg-opacity-100 backdrop-blur-md flex items-center justify-center p-4 z-50">
+
         <div className="bg-white rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
@@ -316,8 +318,8 @@ const MatrimonyDrivesApp = () => {
     if (!showCancelModal || !driveToCancel) return null;
    
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-3xl p-8 w-full max-w-md animate-in fade-in-0 zoom-in-95 duration-300">
+      <div className="fixed inset-0 bg-black/1 bg-opacity-100 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-3xl p-6 w-full max-w-lg animate-in fade-in-0 zoom-in-95 duration-300">
           <div className="flex items-center mb-6">
             <AlertCircle size={28} className="text-red-500 mr-4" />
             <h3 className="text-2xl font-bold text-gray-900">Cancel Registration</h3>

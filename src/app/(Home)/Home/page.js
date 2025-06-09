@@ -129,7 +129,7 @@ const MatrimonyHomeScreen = () => {
             <button key={index} className="flex flex-col items-center group">
               <div className="relative mb-3">
                 <div className={`w-16 h-16 ${action.bgColor} rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}>
-                  <action.icon size={24} className={`text-${action.color}-500`} />
+                  <action.icon size={24} className={`text-${action.color}-800`} />
                 </div>
                 <div className={`absolute -bottom-1 -right-1 w-6 h-6 bg-${action.color}-500 rounded-full flex items-center justify-center border-2 border-[#FF6B6B]`}>
                   <Plus size={12} className="text-[#FF6B6B]" />
