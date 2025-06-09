@@ -22,6 +22,7 @@ import {
 } from "react-icons/lu";
 import { FaCircleCheck } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
  
 const ScheduleMeetScreen = () => {
   // Helper functions
@@ -205,13 +206,13 @@ const ScheduleMeetScreen = () => {
     setIsEditable(newEditableState);
  
     if (newEditableState) {
-      alert(
-        "✏️ Edit Mode\nAll fields are now editable. You can modify the meeting details."
+      toast.info(
+        "Edit Mode enabled You can modify the meeting details."
       );
     } else {
       if (locationInputRef.current) locationInputRef.current.blur();
       setIsInputFocused(false);
-      alert("🔒 View Mode\nFields are now in view-only mode.");
+      toast.info("View Mode\nFields are now in view-only mode.");
     }
   };
  
@@ -233,8 +234,8 @@ const ScheduleMeetScreen = () => {
         router.back();
       }, 1500);
     } else {
-      alert(
-        "⚠️ Form Incomplete\nPlease fill in all required fields and ensure the date/time is in the future."
+      toast.error(
+        " Form Incomplete\nPlease fill in all required fields and ensure the date/time is in the future."
       );
     }
   };
