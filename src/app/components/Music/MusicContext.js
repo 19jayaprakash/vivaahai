@@ -1,63 +1,57 @@
 'use client';
-import { createContext, useContext, useRef, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-const MusicContext = createContext();
-
-export function MusicProvider({ children }) {
+const BackgroundMusic = ({ src, volume = 0.5 }) => {
   const audioRef = useRef(null);
   const [hasStarted, setHasStarted] = useState(false);
 
   useEffect(() => {
-    const handleUserInteraction = () => {
-      if (!hasStarted && audioRef.current) {
-        audioRef.current.play().catch(console.error);
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    // Set audio properties
+    audio.loop = true;
+    audio.volume = volume;
+    audio.preload = 'auto';
+
+    const startMusic = () => {
+      if (!hasStarted && audio) {
+        audio.play().catch(err => {
+          console.log('Audio play failed:', err);
+        });
         setHasStarted(true);
         
-        // Remove event listeners after first interaction
-        document.removeEventListener('click', handleUserInteraction);
-        document.removeEventListener('keydown', handleUserInteraction);
-        document.removeEventListener('scroll', handleUserInteraction);
-        document.removeEventListener('touchstart', handleUserInteraction);
+        // Remove event listeners after first play
+        document.removeEventListener('click', startMusic);
+        document.removeEventListener('keydown', startMusic);
+        document.removeEventListener('touchstart', startMusic);
       }
     };
 
     // Add event listeners for user interaction
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('keydown', handleUserInteraction);
-    document.addEventListener('scroll', handleUserInteraction);
-    document.addEventListener('touchstart', handleUserInteraction);
+    document.addEventListener('click', startMusic);
+    document.addEventListener('keydown', startMusic);
+    document.addEventListener('touchstart', startMusic);
 
+    // Cleanup
     return () => {
-      // Cleanup event listeners
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
-      document.removeEventListener('scroll', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', startMusic);
+      document.removeEventListener('keydown', startMusic);
+      document.removeEventListener('touchstart', startMusic);
     };
-  }, [hasStarted]);
+  }, [hasStarted, volume]);
 
   return (
-    <MusicContext.Provider value={{ audioRef, hasStarted }}>
-      {children}
-      <audio
-        ref={audioRef}
-        loop
-        autoPlay={false} // We'll start it manually after user interaction
-        preload="auto"
-        style={{ display: 'none' }} // Hide the audio element
-      >
-        <source src="/music/background.mp3" type="audio/mpeg" />
-        <source src="/music/background.ogg" type="audio/ogg" />
-        Your browser does not support the audio element.
-      </audio>
-    </MusicContext.Provider>
+    <audio
+      ref={audioRef}
+      style={{ display: 'none' }}
+      preload="auto"
+    >
+      <source src={src} type="audio/mpeg" />
+      <source src={src.replace('.mp3', '.ogg')} type="audio/ogg" />
+      Your browser does not support the audio element.
+    </audio>
   );
-}
-
-export const useMusic = () => {
-  const context = useContext(MusicContext);
-  if (!context) {
-    throw new Error('useMusic must be used within a MusicProvider');
-  }
-  return context;
 };
+
+export default BackgroundMusic;

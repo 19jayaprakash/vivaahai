@@ -25,100 +25,10 @@ import {
   Settings
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { axiosPublic } from '../../base/constant';
  
 const MatrimonyDrivesApp = () => {
-  const [drives, setDrives] = useState([
-    {
-      id: 1,
-      name: "Chennai Tech Professionals Meet",
-      date: "2025-06-15",
-      location: "Hotel Leela Palace, Chennai",
-      time: "10:00 AM - 4:00 PM",
-      paymentMode: "GPay",
-      amount: 2500,
-      type: "paid",
-      status: "Confirmed",
-      description: "Connect with tech professionals from leading companies. This exclusive event brings together software engineers, product managers, and tech leaders from top companies in Chennai.",
-      attendees: 150,
-      image: "tech",
-      category: "Technology"
-    },
-    {
-      id: 2,
-      name: "Mumbai Finance Sector Meet",
-      date: "2025-06-25",
-      location: "Taj Mahal Hotel, Mumbai",
-      time: "11:00 AM - 5:00 PM",
-      paymentMode: "Free",
-      amount: 0,
-      type: "free",
-      status: "Registered",
-      description: "Network with finance professionals and executives from banking, investment, and fintech sectors. Perfect opportunity to meet like-minded professionals.",
-      attendees: 200,
-      image: "finance",
-      category: "Finance"
-    },
-    {
-      id: 3,
-      name: "Delhi Government Officers Drive",
-      date: "2025-07-01",
-      location: "The Imperial Hotel, Delhi",
-      time: "2:00 PM - 6:00 PM",
-      paymentMode: "PhonePe",
-      amount: 1800,
-      type: "paid",
-      status: "Payment Pending",
-      description: "Exclusive meetup for government service professionals including IAS, IPS, and other civil service officers seeking meaningful connections.",
-      attendees: 120,
-      image: "government",
-      category: "Government"
-    },
-    {
-      id: 4,
-      name: "Bangalore IT Community Drive",
-      date: "2025-07-10",
-      location: "ITC Gardenia, Bangalore",
-      time: "9:00 AM - 3:00 PM",
-      paymentMode: "GPay",
-      amount: 3000,
-      type: "paid",
-      status: "Confirmed",
-      description: "Join the largest IT community gathering in Bangalore with professionals from startups to MNCs. Special focus on senior developers and architects.",
-      attendees: 300,
-      image: "it",
-      category: "Information Technology"
-    },
-    {
-      id: 5,
-      name: "Hyderabad Healthcare Meet",
-      date: "2025-07-15",
-      location: "Park Hyatt, Hyderabad",
-      time: "10:30 AM - 4:30 PM",
-      paymentMode: "Free",
-      amount: 0,
-      type: "free",
-      status: "Registered",
-      description: "Connect with healthcare professionals including doctors, nurses, medical researchers, and healthcare administrators from leading hospitals.",
-      attendees: 180,
-      image: "healthcare",
-      category: "Healthcare"
-    },
-    {
-      id: 6,
-      name: "Pune Engineering Professionals",
-      date: "2025-07-20",
-      location: "JW Marriott, Pune",
-      time: "1:00 PM - 7:00 PM",
-      paymentMode: "GPay",
-      amount: 2200,
-      type: "paid",
-      status: "Confirmed",
-      description: "Meet fellow engineering professionals from mechanical, electrical, civil, and other core engineering disciplines.",
-      attendees: 160,
-      image: "engineering",
-      category: "Engineering"
-    }
-  ]);
+  const [drives, setDrives] = useState([]);
  
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -129,6 +39,19 @@ const MatrimonyDrivesApp = () => {
   const [sortBy, setSortBy] = useState('date');
   const [searchTerm, setSearchTerm] = useState('');
  
+  useEffect(()=>{
+    axiosPublic.get(`/drive/drive-registration`,{
+      headers:{
+        Authorization : `Bearer ${localStorage.getItem("token")}`
+      }
+    })
+    .then((res)=>{
+      if(res.status === 200){
+        setDrives(res.data.registrations);
+      }
+    })
+  },[]);
+ 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', {
@@ -138,6 +61,16 @@ const MatrimonyDrivesApp = () => {
       day: 'numeric'
     });
   };
+ 
+  const formatTime = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+ 
  
   const getDaysUntil = (dateString) => {
     const today = new Date();
@@ -221,18 +154,19 @@ const MatrimonyDrivesApp = () => {
     }
   };
  
-  const filteredDrives = drives.filter(drive => {
-    const matchesSearch = drive.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         drive.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         drive.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredDrives = drives
+  // .filter(drive => {
+  //   const matchesSearch = drive.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //                        drive.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //                        drive.category.toLowerCase().includes(searchTerm.toLowerCase());
    
-    if (!matchesSearch) return false;
+  //   if (!matchesSearch) return false;
    
-    if (filter === 'all') return true;
-    if (filter === 'upcoming') return getDaysUntil(drive.date) > 0;
-    if (filter === 'confirmed') return drive.status === 'Confirmed';
-    return true;
-  });
+  //   if (filter === 'all') return true;
+  //   if (filter === 'upcoming') return getDaysUntil(drive.date) > 0;
+  //   if (filter === 'confirmed') return drive.status === 'Confirmed';
+  //   return true;
+  // });
  
   const sortedDrives = [...filteredDrives].sort((a, b) => {
     if (sortBy === 'date') return new Date(a.date) - new Date(b.date);
@@ -247,7 +181,7 @@ const MatrimonyDrivesApp = () => {
    
     return (
      <div className="fixed inset-0 bg-black/1 bg-opacity-100 backdrop-blur-md flex items-center justify-center p-4 z-50">
-
+ 
         <div className="bg-white rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
@@ -262,29 +196,29 @@ const MatrimonyDrivesApp = () => {
             </button>
           </div>
  
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">{selectedDrive.name}</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">{selectedDrive.Drive.driveName}</h2>
           <p className="text-gray-600 mb-8 leading-relaxed text-lg">{selectedDrive.description}</p>
  
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="space-y-4">
               <div className="flex items-center">
                 <Calendar size={22} className="text-pink-500 mr-4" />
-                <span className="text-gray-700 font-medium">{formatDate(selectedDrive.date)}</span>
+                <span className="text-gray-700 font-medium">{formatDate(selectedDrive.Drive.driveDate)}</span>
               </div>
              
               <div className="flex items-center">
                 <Clock size={22} className="text-pink-500 mr-4" />
-                <span className="text-gray-700 font-medium">{selectedDrive.time}</span>
+                <span className="text-gray-700 font-medium">{formatTime(selectedDrive.Drive.driveDate)}</span>
               </div>
             </div>
            
             <div className="space-y-4">
               <button
                 className="flex items-center cursor-pointer w-full text-left group"
-                onClick={() => openLocation(selectedDrive.location)}
+                onClick={() => openLocation(selectedDrive.Drive.location)}
               >
                 <MapPin size={22} className="text-pink-500 mr-4" />
-                <span className="text-pink-500 underline flex-1 group-hover:text-pink-600">{selectedDrive.location}</span>
+                <span className="text-pink-500 underline flex-1 group-hover:text-pink-600">{selectedDrive.Drive.location}</span>
                 <ExternalLink size={18} className="text-pink-500 ml-2" />
               </button>
              
@@ -327,13 +261,13 @@ const MatrimonyDrivesApp = () => {
          
           <p className="text-gray-600 mb-6 leading-relaxed text-lg">
             Are you sure you want to cancel your registration for{' '}
-            <span className="font-semibold">"{driveToCancel.name}"</span>?
+            <span className="font-semibold">&quot;{driveToCancel.Drive.driveName}&quot;</span>?
           </p>
          
-          {driveToCancel.type === 'paid' && (
+          {driveToCancel.Drive.driveType === 'paid' && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6">
               <p className="text-amber-800 leading-relaxed">
-                <span className="font-bold">Note:</span> Refund of ₹{driveToCancel.amount} will be processed within 5-7 business days.
+                <span className="font-bold">Note:</span> Refund of ₹{driveToCancel.Drive.registrationFee} will be processed within 5-7 business days.
               </p>
             </div>
           )}
@@ -358,11 +292,11 @@ const MatrimonyDrivesApp = () => {
   };
  
   const DriveCard = ({ drive }) => {
-    const daysUntil = getDaysUntil(drive.date);
+    const daysUntil = getDaysUntil(drive.Drive.driveDate);
     const isUpcoming = daysUntil > 0;
     const statusConfig = getStatusColor(drive.status);
     const StatusIcon = statusConfig.icon;
-    const CategoryIcon = getCategoryIcon(drive.category);
+    const CategoryIcon = getCategoryIcon(drive.Drive.driveType);
    
     return (
       <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 group">
@@ -377,7 +311,7 @@ const MatrimonyDrivesApp = () => {
               </span>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-pink-600 transition-colors">
-              {drive.name}
+              {drive.Drive.driveName}
             </h3>
             {isUpcoming && (
               <div className="inline-flex items-center bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 text-sm font-semibold px-3 py-1.5 rounded-full">
@@ -403,19 +337,19 @@ const MatrimonyDrivesApp = () => {
           <div className="space-y-3">
             <div className="flex items-center text-sm">
               <Calendar size={16} className="text-pink-500 mr-3" />
-              <span className="text-gray-700 font-medium">{formatDate(drive.date)}</span>
+              <span className="text-gray-700 font-medium">{formatDate(drive.Drive.driveDate)}</span>
             </div>
            
             <div className="flex items-center text-sm">
               <Clock size={16} className="text-pink-500 mr-3" />
-              <span className="text-gray-700 font-medium">{drive.time}</span>
+              <span className="text-gray-700 font-medium">{formatTime(drive.Drive.driveDate)}</span>
             </div>
           </div>
          
           <div className="space-y-3">
             <div className="flex items-center text-sm">
               <MapPin size={16} className="text-pink-500 mr-3" />
-              <span className="text-gray-700 truncate">{drive.location}</span>
+              <span className="text-gray-700 truncate">{drive.Drive.location}</span>
             </div>
            
             <div className="flex items-center text-sm">
@@ -428,10 +362,10 @@ const MatrimonyDrivesApp = () => {
         <div className="flex justify-between items-center pt-4 border-t border-gray-100">
           <div>
             <p className="text-green-600 font-bold text-lg">
-              {drive.type === 'free' ? 'Free Entry' : `₹${drive.amount}`}
+              {drive.Drive.driveType === 'Free' ? 'Free Entry' : `₹${drive.Drive.registrationFee}`}
             </p>
-            {drive.type === 'paid' && (
-              <p className="text-gray-500 text-sm">{drive.paymentMode}</p>
+            {drive.Drive.driveType === 'paid' && (
+              <p className="text-gray-500 text-sm">{drive.paymentMode || "Free"}</p>
             )}
           </div>
          
@@ -505,7 +439,7 @@ const MatrimonyDrivesApp = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold text-green-600">
-                  ₹{drives.reduce((sum, drive) => sum + drive.amount, 0)}
+                  ₹{drives.reduce((sum, drive) => sum + (Number(drive.amount) || 0), 0)}
                 </p>
                 <p className="text-gray-600 font-medium">Total Investment</p>
               </div>
@@ -616,4 +550,3 @@ const MatrimonyDrivesApp = () => {
 };
  
 export default MatrimonyDrivesApp;
- 

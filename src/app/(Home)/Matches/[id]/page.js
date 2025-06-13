@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { axiosPublic } from '../../../base/constant';
 import {
   ArrowLeft,
   Heart,
@@ -19,61 +20,43 @@ import {
   Star,
   X,
   CheckCircle,
-  Camera
+  Camera,
+  Mail,
+  User,
+  Clock,
+  Home,
+  Globe,
+  Languages,
+  Utensils,
+  Cigarette,
+  Wine,
+  FileText,
+  Building,
+  DollarSign,
+  UserCheck,
+  Zap,
+  Target,
+  Award,
+  School,
+  MapPin as Location,
+  PhoneCall,
+  Hash,
+  Eye,
+  UserPlus
 } from 'lucide-react';
-import { useRouter, useParams} from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
  
-// Sample profile data - in real app this would come from props/API
-const profileData = {
-  id: "1",
-  name: "Priya Sharma",
-  gender: "Female",
-  weight: "50kg",
-  age: 25,
-  height: "140cm",
-  state: "Tamil Nadu",
-  location: "Chennai",
-  occupation: "Doctor",
-  caste: "Brahmin",
-  educationlevel: "MBBS",
-  region: "South",
-  lifestyle: "Active",
-  religion: "Hindu",
-  motherTongue: "Tamil",
-  maritalStatus: "Never Married",
-  profileId: "M11594600",
-  aboutMe: "I am a passionate doctor who loves helping people. I enjoy traveling, reading books, and practicing yoga in my free time. Looking for a life partner who shares similar values and supports my career aspirations.",
-  familyDetails: {
-    fatherOccupation: "Business",
-    motherOccupation: "Teacher",
-    siblings: "1 Sister (Married)",
-    familyType: "Nuclear",
-    familyValues: "Traditional"
-  },
-  interests: ["Travel", "Reading", "Yoga", "Cooking", "Music"],
-  photos: [
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop&crop=face&auto=format",
-    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop&crop=face&auto=format",
-    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=600&fit=crop&crop=face&auto=format",
-    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop&crop=face&auto=format"
-  ],
-  isVerified: true,
-  lastActive: "2 hours ago",
-  responseRate: "95%",
-  preferences: {
-    ageRange: "26-32",
-    heightRange: "165cm-180cm",
-    education: "Graduate or above",
-    occupation: "Professional"
-  }
-};
+// Default/placeholder photos - you might want to add a default photo field to your API
+const defaultPhotos = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=600&fit=crop&crop=face&auto=format",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop&crop=face&auto=format"
+];
  
-const PhotoGallery = ({ photos }) => {
+const PhotoGallery = ({ photos = defaultPhotos }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showFullscreen, setShowFullscreen] = useState(false);
- 
  
   const handleNext = () => {
     setActiveIndex((prevIndex) => (prevIndex + 1) % photos.length);
@@ -88,8 +71,8 @@ const PhotoGallery = ({ photos }) => {
       <div className="relative">
         <div className="aspect-[4/3] rounded-2xl overflow-hidden">
           <Image
-          width={600}
-          height={800}
+            width={600}
+            height={800}
             src={photos[activeIndex]}
             alt="Profile"
             className="w-full h-full object-cover cursor-pointer"
@@ -147,8 +130,8 @@ const PhotoGallery = ({ photos }) => {
           </button>
          
           <Image
-          width={600}
-          height={800}
+            width={600}
+            height={800}
             src={photos[activeIndex]}
             alt="Profile"
             className="max-w-full max-h-full object-contain"
@@ -179,7 +162,7 @@ const PhotoGallery = ({ photos }) => {
  
 const InfoCard = ({ title, children, icon: Icon }) => (
   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-    <div className="flex items-center gap-3 mb-4">
+    <div className="flex items-center gap-3 mb-6">
       <div className="w-10 h-10 bg-[#FF6B6B] rounded-xl flex items-center justify-center">
         <Icon size={20} className="text-white" />
       </div>
@@ -189,26 +172,140 @@ const InfoCard = ({ title, children, icon: Icon }) => (
   </div>
 );
  
+const DetailItem = ({ icon: Icon, label, value, iconColor = "text-gray-400" }) => (
+  <div className="flex items-start gap-3 py-2">
+    <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center mt-0.5">
+      <Icon size={16} className={iconColor} />
+    </div>
+    <div className="flex-1 min-w-0">
+      <div className="text-sm text-gray-600 mb-1">{label}</div>
+      <div className="font-medium text-gray-900 break-words">{value || 'N/A'}</div>
+    </div>
+  </div>
+);
+ 
 const ProfileViewPage = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
   const params = useParams();
   const id = params.id;
-  console.log(id);
+ 
+  // Helper function to calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return 'N/A';
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+ 
+  // Helper function to get full name
+  const getFullName = (profile) => {
+    if (!profile) return '';
+    const firstName = profile.firstName || '';
+    const lastName = profile.lastName || '';
+    return `${firstName} ${lastName}`.trim();
+  };
+ 
+  // Helper function to format siblings data
+  const formatSiblings = (siblings) => {
+    if (!siblings || !Array.isArray(siblings) || siblings.length === 0) {
+      return 'No siblings';
+    }
+   
+    return siblings.map(sibling => {
+      const type = sibling.type || '';
+      const gender = sibling.gender || '';
+      const status = sibling.maritalStatus || '';
+      return `${type} ${gender} (${status})`;
+    }).join(', ');
+  };
+ 
+  // Helper function to format text
+  const formatText = (text) => {
+    if (!text) return 'N/A';
+    return text.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+ 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        const response = await axiosPublic.get(
+          `/user/get-full-userProfile?selectedUserId=${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+             
+            }
+          }
+        );
+        setProfileData(response.data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+        setError('Failed to load profile data');
+        toast.error('Failed to load profile data');
+      } finally {
+        setLoading(false);
+      }
+    }
+ 
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
  
   const handleBack = () => {
-    // In real app, this would use router.back() or navigate back
-    // console.log("Navigate back to matches");
     router.back();
   };
  
   const handleSendInterest = () => {
-    toast.success(`Interest sent to ${profileData.name}!`);
+    const name = getFullName(profileData?.userProfile);
+    toast.success(`Interest sent to ${name}!`);
   };
  
   const handleScheduleMeet = () => {
     setShowScheduleModal(true);
   };
+ 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#FF6B6B] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+ 
+  // Error state
+  if (error || !profileData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || 'Profile not found'}</p>
+          <button
+            onClick={handleBack}
+            className="bg-[#FF6B6B] text-white px-4 py-2 rounded-lg hover:bg-[#FF5555] transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+ 
+  const { userProfile, partnerPreference, professional, family, interests } = profileData;
  
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
@@ -223,14 +320,14 @@ const ProfileViewPage = () => {
             <span className="font-medium">Back</span>
           </button>
          
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <button className="p-2 rounded-full cursor-pointer bg-orange-100 hover:bg-orange-200 transition-colors">
               <Phone size={18} className="text-orange-600" />
             </button>
             <button className="p-2 rounded-full cursor-pointer bg-green-100 hover:bg-green-200 transition-colors">
               <MessageCircle size={18} className="text-green-600" />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
  
@@ -238,7 +335,7 @@ const ProfileViewPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Photos and Quick Info */}
           <div className="lg:col-span-1 space-y-6">
-            <PhotoGallery photos={profileData.photos} />
+            <PhotoGallery photos={defaultPhotos} />
            
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-3">
@@ -260,16 +357,33 @@ const ProfileViewPage = () => {
  
             {/* Activity Status */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-600">Activity</span>
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Activity size={16} className="text-gray-600" />
+                  <span className="text-sm font-medium text-gray-600">Activity Status</span>
+                </div>
+                <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-xs text-green-600">Active</span>
+                  <span className="text-xs text-green-600 font-medium">Active</span>
                 </div>
               </div>
-              <div className="space-y-2 text-sm text-gray-600">
-                <div>Last seen: {profileData.lastActive}</div>
-                <div>Response rate: {profileData.responseRate}</div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 flex items-center gap-2">
+                    <Hash size={12} className="text-gray-400" />
+                    Profile ID
+                  </span>
+                  <span className="font-medium text-gray-900">{userProfile?.profileId || 'N/A'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 flex items-center gap-2">
+                    <UserPlus size={12} className="text-gray-400" />
+                    Member since
+                  </span>
+                  <span className="font-medium text-gray-900">
+                    {userProfile?.createdAt ? new Date(userProfile.createdAt).getFullYear() : 'N/A'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -278,175 +392,314 @@ const ProfileViewPage = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Header */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-2xl font-bold text-[#FF6B6B]">{profileData.name}</h1>
-                    {profileData.isVerified && (
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
+                    <h1 className="text-2xl font-bold text-[#FF6B6B]">
+                      {getFullName(userProfile)}
+                    </h1>
+                    {userProfile?.isBasicProfileSubmitted && (
                       <div className="flex items-center gap-1 bg-blue-100 px-2 py-1 rounded-full">
                         <Shield size={12} className="text-blue-600" />
                         <span className="text-xs font-medium text-blue-800">Verified</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-600 mb-1">{profileData.profileId}</p>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>{profileData.age} years</span>
-                    <span>•</span>
-                    <span>{profileData.height}</span>
-                    <span>•</span>
-                    <span>{profileData.location}</span>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Clock size={14} className="text-gray-400" />
+                      <span>{calculateAge(userProfile?.dateOfBirth)} years old</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Ruler size={14} className="text-gray-400" />
+                      <span>{userProfile?.height || 'N/A'} cm</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <MapPin size={14} className="text-gray-400" />
+                      <span>{userProfile?.city || 'N/A'}</span>
+                    </div>
                   </div>
                 </div>
                
-                <div className="flex items-center gap-1 bg-yellow-100 px-3 py-1 rounded-full">
+                <div className="flex items-center gap-1 bg-yellow-100 px-3 py-2 rounded-full">
                   <Star size={14} className="text-yellow-600 fill-current" />
-                  <span className="text-sm font-semibold text-yellow-800">90% Match</span>
+                  <span className="text-sm font-semibold text-yellow-800">Featured Profile</span>
                 </div>
               </div>
- 
-              {profileData.aboutMe && (
-                <div className="border-t pt-4">
-                  <h4 className="font-semibold text-[#FF6B6B] mb-2">About Me</h4>
-                  <p className="text-gray-700 leading-relaxed">{profileData.aboutMe}</p>
-                </div>
-              )}
             </div>
  
             {/* Basic Details */}
-            <InfoCard title="Basic Details" icon={Users}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <MapPin size={16} className="text-gray-400" />
-                    <div>
-                      <span className="text-sm text-gray-600">Location</span>
-                      <p className="font-medium text-gray-900">{profileData.location}, {profileData.state}</p>
-                    </div>
-                  </div>
-                 
-                  <div className="flex items-center gap-3">
-                    <Ruler size={16} className="text-gray-400" />
-                    <div>
-                      <span className="text-sm text-gray-600">Height</span>
-                      <p className="font-medium text-gray-900">{profileData.height}</p>
-                    </div>
-                  </div>
+            <InfoCard title="Basic Details" icon={User}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                <DetailItem
+                  icon={Location}
+                  label="Location"
+                  value={`${userProfile?.city || 'N/A'}, ${userProfile?.state || 'N/A'}`}
+                  iconColor="text-blue-500"
+                />
+                
+                <DetailItem
+                  icon={Globe}
+                  label="Religion"
+                  value={userProfile?.religion}
+                  iconColor="text-indigo-500"
+                />
+               
+                <DetailItem
+                  icon={Calendar}
+                  label="Date of Birth"
+                  value={userProfile?.dateOfBirth ? new Date(userProfile.dateOfBirth).toLocaleDateString() : 'N/A'}
+                  iconColor="text-red-500"
+                />
  
-                  <div className="flex items-center gap-3">
-                    <Weight size={16} className="text-gray-400" />
-                    <div>
-                      <span className="text-sm text-gray-600">Weight</span>
-                      <p className="font-medium text-gray-900">{profileData.weight}</p>
-                    </div>
-                  </div>
-                </div>
+                <DetailItem
+                  icon={Users}
+                  label="Caste"
+                  value={userProfile?.caste}
+                  iconColor="text-teal-500"
+                />
  
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600">Religion</span>
-                    <p className="font-medium text-gray-900">{profileData.religion}</p>
-                  </div>
-                 
-                  <div>
-                    <span className="text-sm text-gray-600">Mother Tongue</span>
-                    <p className="font-medium text-gray-900">{profileData.motherTongue}</p>
-                  </div>
+                <DetailItem
+                  icon={Ruler}
+                  label="Height"
+                  value={`${userProfile?.height || 'N/A'} cm`}
+                  iconColor="text-green-500"
+                />
+               
+                <DetailItem
+                  icon={Languages}
+                  label="Mother Tongue"
+                  value={userProfile?.motherTongue}
+                  iconColor="text-pink-500"
+                />
  
-                  <div>
-                    <span className="text-sm text-gray-600">Marital Status</span>
-                    <p className="font-medium text-gray-900">{profileData.maritalStatus}</p>
-                  </div>
-                </div>
+                <DetailItem
+                  icon={Weight}
+                  label="Weight"
+                  value={`${userProfile?.weight || 'N/A'} kg`}
+                  iconColor="text-purple-500"
+                />
+ 
+                <DetailItem
+                  icon={UserCheck}
+                  label="Marital Status"
+                  value={formatText(userProfile?.maritalStatus)}
+                  iconColor="text-cyan-500"
+                />
+              </div>
+            </InfoCard>
+ 
+            {/* Additional Personal Details */}
+            <InfoCard title="Lifestyle & Preferences" icon={Activity}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                <DetailItem
+                  icon={Star}
+                  label="Zodiac Sign"
+                  value={userProfile?.zodiacSign}
+                  iconColor="text-yellow-500"
+                />
+               
+                <DetailItem
+                  icon={Utensils}
+                  label="Diet Preferences"
+                  value={formatText(userProfile?.dietPreferences)}
+                  iconColor="text-green-600"
+                />
+ 
+                <DetailItem
+                  icon={Zap}
+                  label="Star Sign"
+                  value={userProfile?.starSign}
+                  iconColor="text-amber-500"
+                />
+ 
+                <DetailItem
+                  icon={Cigarette}
+                  label="Smoking Habits"
+                  value={formatText(userProfile?.smokingHabits)}
+                  iconColor="text-gray-600"
+                />
+ 
+                <DetailItem
+                  icon={Activity}
+                  label="Body Type"
+                  value={formatText(userProfile?.bodyType)}
+                  iconColor="text-blue-600"
+                />
+ 
+                <DetailItem
+                  icon={Wine}
+                  label="Drinking Habits"
+                  value={formatText(userProfile?.drinkingHabits)}
+                  iconColor="text-red-600"
+                />
               </div>
             </InfoCard>
  
             {/* Professional Details */}
-            <InfoCard title="Professional Details" icon={Briefcase}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <Briefcase size={16} className="text-gray-400" />
-                  <div>
-                    <span className="text-sm text-gray-600">Occupation</span>
-                    <p className="font-medium text-gray-900">{profileData.occupation}</p>
-                  </div>
+            {professional && (
+              <InfoCard title="Professional Background" icon={Briefcase}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <DetailItem
+                    icon={Briefcase}
+                    label="Occupation"
+                    value={professional.occupation}
+                    iconColor="text-blue-600"
+                  />
+                 
+                  <DetailItem
+                    icon={GraduationCap}
+                    label="Education Level"
+                    value={professional.education}
+                    iconColor="text-green-600"
+                  />
+ 
+                  <DetailItem
+                    icon={Building}
+                    label="Employment Type"
+                    value={formatText(professional.employedIn)}
+                    iconColor="text-purple-600"
+                  />
+ 
+                  <DetailItem
+                    icon={DollarSign}
+                    label="Annual Income"
+                    value={professional.annualIncome}
+                    iconColor="text-green-500"
+                  />
+ 
+                  <DetailItem
+                    icon={Award}
+                    label="Degree"
+                    value={professional.degree}
+                    iconColor="text-indigo-600"
+                  />
+ 
+                  <DetailItem
+                    icon={School}
+                    label="College/University"
+                    value={professional.college}
+                    iconColor="text-teal-600"
+                  />
                 </div>
-               
-                <div className="flex items-center gap-3">
-                  <GraduationCap size={16} className="text-gray-400" />
-                  <div>
-                    <span className="text-sm text-gray-600">Education</span>
-                    <p className="font-medium text-gray-900">{profileData.educationlevel}</p>
-                  </div>
-                </div>
-              </div>
-            </InfoCard>
+              </InfoCard>
+            )}
  
             {/* Family Details */}
-            <InfoCard title="Family Details" icon={Users}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600">Father&apos;s Occupation</span>
-                    <p className="font-medium text-gray-900">{profileData.familyDetails.fatherOccupation}</p>
-                  </div>
+            {family && (
+              <InfoCard title="Family Information" icon={Users}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <DetailItem
+                    icon={Home}
+                    label="Family Type"
+                    value={formatText(family.familyType)}
+                    iconColor="text-blue-600"
+                  />
                  
-                  <div>
-                    <span className="text-sm text-gray-600">Mother&apos;s Occupation</span>
-                    <p className="font-medium text-gray-900">{profileData.familyDetails.motherOccupation}</p>
-                  </div>
-                </div>
+                  <DetailItem
+                    icon={Heart}
+                    label="Family Values"
+                    value={formatText(family.familyValues)}
+                    iconColor="text-red-500"
+                  />
  
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-sm text-gray-600">Siblings</span>
-                    <p className="font-medium text-gray-900">{profileData.familyDetails.siblings}</p>
-                  </div>
-                 
-                  <div>
-                    <span className="text-sm text-gray-600">Family Type</span>
-                    <p className="font-medium text-gray-900">{profileData.familyDetails.familyType}</p>
-                  </div>
-                </div>
-              </div>
-            </InfoCard>
+                  <DetailItem
+                    icon={Briefcase}
+                    label="Parents' Occupation"
+                    value={family.parentsOccupations}
+                    iconColor="text-gray-600"
+                  />
  
-            {/* Interests & Hobbies */}
-            <InfoCard title="Interests & Hobbies" icon={Activity}>
-              <div className="flex flex-wrap gap-2">
-                {profileData.interests.map((interest, index) => (
-                  <span
-                    key={index}
-                    className="bg-[#FF6B6B] text-white px-3 py-1 rounded-full text-sm font-medium"
-                  >
-                    {interest}
-                  </span>
-                ))}
-              </div>
-            </InfoCard>
+                  <DetailItem
+                    icon={Users}
+                    label="Siblings"
+                    value={formatSiblings(family.sibilings)}
+                    iconColor="text-green-600"
+                  />
+                </div>
+              </InfoCard>
+            )}
  
             {/* Partner Preferences */}
-            <InfoCard title="Partner Preferences" icon={Heart}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-gray-600">Age Range</span>
-                  <p className="font-medium text-gray-900">{profileData.preferences.ageRange} years</p>
+            {partnerPreference && (
+              <InfoCard title="Partner Preferences" icon={Heart}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                  <DetailItem
+                    icon={Clock}
+                    label="Preferred Age Range"
+                    value={`${partnerPreference.minAge || 'N/A'} - ${partnerPreference.maxAge || 'N/A'} years`}
+                    iconColor="text-orange-500"
+                  />
+                 
+                  <DetailItem
+                    icon={Ruler}
+                    label="Preferred Height Range"
+                    value={`${partnerPreference.minHeight || 'N/A'} - ${partnerPreference.maxHeight || 'N/A'} cm`}
+                    iconColor="text-green-500"
+                  />
+ 
+                  <DetailItem
+                    icon={Weight}
+                    label="Preferred Weight Range"
+                    value={`${partnerPreference.minWeight || 'N/A'} - ${partnerPreference.maxWeight || 'N/A'} kg`}
+                    iconColor="text-purple-500"
+                  />
+ 
+                  <DetailItem
+                    icon={GraduationCap}
+                    label="Education Preference"
+                    value={partnerPreference.educationLevel}
+                    iconColor="text-blue-600"
+                  />
+                 
+                  <DetailItem
+                    icon={Briefcase}
+                    label="Occupation Preference"
+                    value={partnerPreference.occupation}
+                    iconColor="text-indigo-600"
+                  />
+ 
+                  <DetailItem
+                    icon={MapPin}
+                    label="Location Preference"
+                    value={`${partnerPreference.city || 'N/A'}, ${partnerPreference.state || 'N/A'}`}
+                    iconColor="text-teal-500"
+                  />
                 </div>
+              </InfoCard>
+            )}
+ 
+            {/* Contact Information */}
+            <InfoCard title="Contact Information" icon={Phone}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                <DetailItem
+                  icon={Phone}
+                  label="Primary Contact"
+                  value={userProfile?.primaryContact}
+                  iconColor="text-blue-600"
+                />
                
-                <div>
-                  <span className="text-sm text-gray-600">Height Range</span>
-                  <p className="font-medium text-gray-900">{profileData.preferences.heightRange}</p>
-                </div>
-               
-                <div>
-                  <span className="text-sm text-gray-600">Education</span>
-                  <p className="font-medium text-gray-900">{profileData.preferences.education}</p>
-                </div>
-               
-                <div>
-                  <span className="text-sm text-gray-600">Occupation</span>
-                  <p className="font-medium text-gray-900">{profileData.preferences.occupation}</p>
-                </div>
+                <DetailItem
+                  icon={Mail}
+                  label="Email Address"
+                  value={userProfile?.email}
+                  iconColor="text-red-500"
+                />
+ 
+                <DetailItem
+                  icon={PhoneCall}
+                  label="Secondary Contact"
+                  value={userProfile?.secondaryContact}
+                  iconColor="text-green-600"
+                />
+ 
+                <DetailItem
+                  icon={Mail}
+                  label="Alternate Email"
+                  value={userProfile?.alternateEmail}
+                  iconColor="text-purple-500"
+                />
               </div>
             </InfoCard>
           </div>
@@ -454,24 +707,7 @@ const ProfileViewPage = () => {
       </div>
  
       {/* Floating Action Buttons for Mobile */}
-      <div className="fixed bottom-4 left-4 right-4 lg:hidden">
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={handleSendInterest}
-            className="bg-gradient-to-r from-rose-500 to-pink-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-rose-600 hover:to-pink-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
-          >
-            <Heart size={16} />
-            Send Interest
-          </button>
-          <button
-            onClick={handleScheduleMeet}
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
-          >
-            <Calendar size={16} />
-            Schedule Meet
-          </button>
-        </div>
-      </div>
+      
     </div>
   );
 };

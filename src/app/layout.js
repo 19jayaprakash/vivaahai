@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { MusicProvider } from "./components/Music/MusicContext";
+import BackgroundMusic from "./components/Music/MusicContext";
 import { ToastContainer } from "react-toastify";
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,9 +24,11 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ToastContainer />
-        <MusicProvider>
+        <BackgroundMusic 
+          src="/vivaahai/music/background-music.mp3" 
+          volume={0.3} 
+        />
         {children}
-        </MusicProvider>
       </body>
     </html>
   );

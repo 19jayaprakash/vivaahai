@@ -72,6 +72,7 @@ export default function MatrimonyLanding() {
         localStorage.setItem('firstName', response.data.firstName);
         localStorage.setItem('lastName', response.data.lastName);
         localStorage.setItem('primaryContact', response.data.primaryContact);
+        localStorage.setItem('userId',response.data.userId);
  
         if(response.data.roleId === 1){
           router.push("/Admin");
@@ -185,13 +186,13 @@ export default function MatrimonyLanding() {
   const[showPassword,setShowPassword] = useState(true);
  
   return (
-   <div className="min-h-screen bg-white relative overflow-hidden">
+   <div className="min-h-screen bg-white relative overflow-hidden" style={{background:`url(/vivaahai/bg-img.png) no-repeat`,backgroundSize:"cover"}}>
       {/* Background Images with Blur Effect */}
-      <div className="absolute inset-0 z-0">
-        {/* Multiple layered background images */}
+      {/* <div className="absolute inset-0 z-0">
+       
         <div className="absolute inset-0 bg-gradient-to-br from-pink-50 to-rose-50"></div>
        
-        {/* Floating blurred image elements */}
+        
         <div className="absolute top-10 left-10 w-40 h-40 rounded-full overflow-hidden blur-2xl opacity-90 animate-pulse">
           <div className="w-full h-full bg-gradient-to-r from-[#FF6B6B] to-pink-400"></div>
         </div>
@@ -212,7 +213,7 @@ export default function MatrimonyLanding() {
           <div className="w-full h-full bg-gradient-to-r from-rose-200 via-pink-300 to-[#FF6B6B]"></div>
         </div>
        
-        {/* Additional scattered elements */}
+        
         <div className="absolute top-1/3 left-1/4 w-24 h-24 rounded-full overflow-hidden blur-xl opacity-40 animate-pulse delay-1500">
           <div className="w-full h-full bg-[#FF6B6B]"></div>
         </div>
@@ -221,15 +222,15 @@ export default function MatrimonyLanding() {
           <div className="w-full h-full bg-gradient-to-r from-pink-400 to-rose-400"></div>
         </div>
         <div className="absolute inset-0 bg-white/70"></div>
-      </div>
+      </div> */}
  
-      <header className="relative z-10 px-6 py-4">
+      <header className="relative z-10 px-6 py-4 ">
         <nav className="flex justify-between items-center max-w-7xl mx-auto">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full flex items-center justify-center shadow-lg">
+          <div className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] rounded-[10px] p-1.5">
+            <div className="w-10 h-10 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] rounded-full flex items-center justify-center shadow-lg ">
               <Heart className="w-6 h-6 text-white" />
             </div>
-            <span className="text-2xl font-bold text-black">VivaahAI</span>
+            <span className="text-2xl font-bold text-black ">VivaahAI</span>
           </div>
           <button
             onClick={toggleAuthModal}
@@ -243,10 +244,10 @@ export default function MatrimonyLanding() {
       <main className="relative z-10 px-6 pt-12">
         <div className="max-w-7xl mx-auto text-center">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            <span className="text-black">Find Your</span>
-            <span className="block text-[#FF6B6B]">Perfect Match</span>
+            <span className="text-black text-shadow-white text-shadow-sm">Find Your</span>
+            <span className="block text-[#FF6B6B] text-shadow-white text-shadow-sm">Perfect Match</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-700 mb-12 max-w-3xl mx-auto">
+          <p className="text-xl md:text-2xl text-white mb-12 max-w-3xl mx-auto">
             Where hearts connect and destinies align. Join thousands of successful couples who found their soulmate through our platform.
           </p>
          

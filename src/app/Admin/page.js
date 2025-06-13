@@ -110,7 +110,7 @@ const MatrimonyAdminDashboard = () => {
 
   const handleDeleteDrive = (id) => {
     if (window.confirm('Are you sure you want to delete this drive?')) {
-      setDrives(drives.filter(drive => drive.id !== id));
+      setDrives(drives.filter(drive => drive.driveId !== id));
     }
   };
 
@@ -181,8 +181,9 @@ const MatrimonyAdminDashboard = () => {
     drive?.location?.toLowerCase().includes(searchTerm?.toLowerCase())
   );
 
-  const DriveCard = ({ drive, onPress }) => (
+  const DriveCard = ({ drive,key, onPress }) => (
     <div 
+    key={key}
       className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow"
       onClick={onPress}
     >
@@ -211,7 +212,7 @@ const MatrimonyAdminDashboard = () => {
           className="p-2 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"
           onClick={(e) => {
             e.stopPropagation();
-            handleDeleteDrive(drive.id);
+            handleDeleteDrive(drive.driveId);
           }}
         >
           <span className="text-red-600">🗑</span>
@@ -431,14 +432,14 @@ const MatrimonyAdminDashboard = () => {
                       placeholder="Search drives..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-2 border text-black outline-none border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     />
                   </div>
                   <div className="relative">
                     <select
                       value={filterType}
                       onChange={(e) => setFilterType(e.target.value)}
-                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      className="appearance-none text-black outline-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     >
                       <option value="all">All Types</option>
                       <option value="free">Free</option>

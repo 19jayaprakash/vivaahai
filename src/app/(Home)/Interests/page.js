@@ -536,6 +536,7 @@ import {
   Eye,
   Gift
 } from 'lucide-react';
+import Image from 'next/image';
  
 // Enhanced sample data with more profiles
 const interestData = {
@@ -811,9 +812,11 @@ const InterestCard = ({ person, type, onAction }) => {
   return (
     <div className="bg-white  cursor-pointer rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="relative h-48 overflow-hidden ">
-        <img
+        <Image
           src={person.photos[currentPhotoIndex]}
           alt={person.name}
+          width={300}
+          height={500}
           className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
         />
        

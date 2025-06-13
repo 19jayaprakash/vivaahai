@@ -1,5 +1,5 @@
 "use client";
-import { Heart, Home, LogOut, Menu, Star, User, X } from "lucide-react";
+import { Heart, Home, LogOut, Menu, Star, User, X,MessageSquare } from "lucide-react";
 import React,{useState,useEffect} from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -28,6 +28,7 @@ export default function Header() {
     { id: 'matches', label: 'Matches', icon: Heart,path :"/Matches" },
     { id: 'interests', label: 'Interests', icon: Star,path:"/Interests" },
     { id: 'profile', label: 'Profile', icon: User,path:"/Profile"  },
+    { id: 'chats', label: 'Chats', icon: MessageSquare,path:"/Chats"  },
   ];
 
   function handleLogout() {
@@ -47,8 +48,8 @@ export default function Header() {
         {/* Desktop Header */}
         <div className="hidden lg:flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex-shrink-0">
-            <h1 className="text-2xl font-bold text-[#FF6B6B] hover:text-[#e55a5a] transition-colors duration-200 cursor-pointer">
+          <div className="flex-shrink-0" onClick={()=>{router.push("/Home",{scroll:true})}}>
+            <h1 className="text-2xl font-bold text-[#FF6B6B] hover:text-[#e55a5a] transition-colors duration-200 cursor-pointer onClick={() => router.push('/')}">
               VivaahAI
             </h1>
           </div>
@@ -162,7 +163,7 @@ export default function Header() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => {setActiveTab(item.id);router.push(`/${item.label}`)}}
+                  onClick={() => {setActiveTab(item.id);router.push(`/${item.label}`,{ scroll: true })}}
                   className={`flex items-center space-x-1 px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                     pathname === item.path
                       ? 'bg-[#FF6B6B] text-white'

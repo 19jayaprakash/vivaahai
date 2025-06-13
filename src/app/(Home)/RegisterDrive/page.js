@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { axiosPublic } from '../../base/constant';
 
 const DriveRegistrationPage = () => {
   const [loading, setLoading] = useState(false);
@@ -50,44 +51,68 @@ const DriveRegistrationPage = () => {
 
     setLoading(true);
 
-    try {
-      let result;
+    const json = JSON.stringify({
+        driveId : driveData.driveId,
+        registrationDate : new Date(),
+        
+    })
+
+    axiosPublic.post(`/drive/drive-registration`,json,{
+        headers:{
+            Authorization:`Bearer ${localStorage.getItem("token")}`
+        }
+    })
+    .then(res=>{
+        if(res.status === 201){
+            toast.success("Drive registered successfully");
+        }
+    })
+    .catch(err =>{
+        console.log(err);
+    })
+    .finally(setLoading(false));
+
+
+    
+
+    // try {
+    //   let result;
       
-      switch (driveData.driveType?.toLowerCase()) {
-        case 'paid':
-          result = await callPaymentGateway(driveData.id, driveData.registrationFee);
-          if (result.success) {
-            toast.success(`Payment completed successfully! Transaction ID: ${result.transactionId}`);
-          }
-          break;
+    //   switch (driveData.driveType?.toLowerCase()) {
+    //     case 'paid':
+    //       result = await callPaymentGateway(driveData.id, driveData.registrationFee);
+    //       if (result.success) {
+    //         toast.success(`Payment completed successfully! Transaction ID: ${result.transactionId}`);
+    //       }
+    //       break;
 
-        case 'free':
-          result = await callRegisterApi(driveData.id);
-          if (result.success) {
-            toast.success(`You have been registered for this drive! Registration ID: ${result.registrationId}`);
-          }
-          break;
+    //     case 'free':
+    //       result = await callRegisterApi(driveData.id);
+    //       if (result.success) {
+    //         toast.success(`You have been registered for this drive! Registration ID: ${result.registrationId}`);
+    //       }
+    //       break;
 
-        case 'invitation':
-          result = await callRequestInvitationApi(driveData.id);
-          if (result.success) {
-            toast.success(`Your invitation request has been submitted! Request ID: ${result.requestId}`);
-          }
-          break;
+    //     case 'invitation':
+    //       result = await callRequestInvitationApi(driveData.id);
+    //       if (result.success) {
+    //         toast.success(`Your invitation request has been submitted! Request ID: ${result.requestId}`);
+    //       }
+    //       break;
 
-        default:
-          toast.warning('Invalid drive type');
-          return;
-      }
+    //     default:
+    //       toast.warning('Invalid drive type');
+    //       return;
+    //   }
 
-      if (!result.success) {
-        toast.error('Operation failed. Please try again.');
-      }
-    } catch (error) {
-      toast.info('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    //   if (!result.success) {
+    //     toast.error('Operation failed. Please try again.');
+    //   }
+    // } catch (error) {
+    //   toast.info('Something went wrong. Please try again.');
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const getButtonText = () => {

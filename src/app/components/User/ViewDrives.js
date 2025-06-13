@@ -92,6 +92,8 @@ const HorizontalDrivesCarousel = () => {
       hour12: true,
     });
   };
+
+
  
  
   const navigateToRegisterPage = (driveData) => {
@@ -100,7 +102,7 @@ const HorizontalDrivesCarousel = () => {
     router.push('/RegisterDrive');
   };
  
-  if (screenWidth === 0 || drives.length === 0) return null;
+  if (screenWidth === 0 || drives.length === 0) return <div className='text-black text-2xl font-bold'>No Drives At this Moment</div>;
  
   return (
     <div className="py-6">
