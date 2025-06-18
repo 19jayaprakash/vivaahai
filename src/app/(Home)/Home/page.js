@@ -12,6 +12,48 @@ const MatrimonyHomeScreen = () => {
   const [Name,setName] = useState('User');
   const router = useRouter();
 
+  const[profilePic,setProfilePic] = useState(null);
+
+  useEffect(()=>{
+    async function fetchImages() {
+          try {
+            const res = await axiosPublic.get('/user/userPhoto-details', {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              }
+            });
+           
+            fetchProfileImage(res.data);
+          } catch (error) {
+            console.error('Error fetching image data:', error);
+          }
+        };
+        fetchImages();
+  },[]);
+
+  async function fetchProfileImage(url) {
+   
+      const profilePic = url.find(pic => pic.isProfilePhoto === true);
+      if(profilePic){
+        const picName = profilePic.photoUrl.split("/");
+        try {
+          const res = await axiosPublic.get(
+            `/user/display-photo?filename=ProfilePics/${picName[picName.length-1]}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+              responseType: 'blob',
+            }
+          );
+          const blobUrl = URL.createObjectURL(res.data);
+          setProfilePic(blobUrl);
+        } catch (error) {
+          console.error('Failed to fetch image', error);
+        }
+      }
+      }
+
   useEffect(()=>{
     const storedName = localStorage.getItem('firstName');
     if (storedName) {
@@ -72,7 +114,7 @@ const MatrimonyHomeScreen = () => {
                   width={400}
                   height={600}
                   alt="Profile"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105 cursor-pointer"
+                  className="w-full h-full object-cover  transition-transform duration-500 hover:scale-105 cursor-pointer"
                   loading="lazy"
                 />
               )}
@@ -186,6 +228,29 @@ const MatrimonyHomeScreen = () => {
   );
 };
 
+const [timeLeft, setTimeLeft] = useState('');
+ 
+  useEffect(() => {
+    const updateTimeLeft = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // Set time to midnight
+ 
+      const diff = midnight - now;
+ 
+      const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+ 
+      setTimeLeft(`${hours}h:${minutes}m:${seconds}s`);
+    };
+ 
+    updateTimeLeft(); // Call immediately
+    const interval = setInterval(updateTimeLeft, 1000); // Update every second
+ 
+    return () => clearInterval(interval); // Clean up
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -239,11 +304,21 @@ const MatrimonyHomeScreen = () => {
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <div className="w-16 h-16 bg-red-50 border-4 border-red-400 rounded-full flex items-center justify-center text-3xl">
-                  👤
+                  {profilePic ?
+                  <Image
+                  src={profilePic}
+                  width={400}
+                  height={600}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full transition-transform duration-500 hover:scale-105 cursor-pointer"
+                  loading="lazy"
+                /> 
+                :
+                 <> 👤 </>}
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
+                {/* <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center border-2 border-white">
                   <Camera size={12} className="text-white" />
-                </div>
+                </div> */}
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{Name}</h2>
@@ -266,8 +341,8 @@ const MatrimonyHomeScreen = () => {
             { icon: Shield, label: 'Verify', sublabel: 'Profile', color: 'blue', bgColor: 'bg-blue-50', onClick:()=>{} },
             { icon: Star, label: 'Add', sublabel: 'Horoscope', color: 'purple', bgColor: 'bg-purple-50', onClick:()=>{} }
           ].map((action, index) => (
-            <button key={index} className="flex flex-col items-center group cursor-pointer" onClick={action.onClick}>
-              <div className="relative mb-3">
+            <button key={index} className="flex flex-col items-center group " onClick={action.onClick}>
+              <div className="relative mb-3 cursor-pointer">
                 <div className={`w-16 h-16 ${action.bgColor} rounded-full flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}>
                   <action.icon size={24} className={`text-${action.color}-800`} />
                 </div>
@@ -290,7 +365,7 @@ const MatrimonyHomeScreen = () => {
             </div>
             <div className="bg-green-500 text-white px-4 py-3 rounded-xl text-center min-w-fit">
               <p className="text-xs mb-1">⏰ Time left to view</p>
-              <p className="font-bold">09h:35m:07s</p>
+              <p className="font-bold">{timeLeft}</p>
             </div>
           </div>
 
@@ -305,7 +380,7 @@ const MatrimonyHomeScreen = () => {
             </div>
           </div>
 
-          <button className="w-full bg-white border-2 border-red-400 text-red-400 hover:bg-red-50 py-4 rounded-full font-semibold flex items-center justify-center space-x-2 transition-colors" onClick={e => {router.push("/Matches")}}>
+          <button className="w-full bg-white border-2 cursor-pointer border-red-400 text-red-400 hover:bg-red-50 py-4 rounded-full font-semibold flex items-center justify-center space-x-2 transition-colors" onClick={e => {router.push("/Matches")}}>
             <span>View all matches</span>
             <ArrowRight size={16} />
           </button>
@@ -329,21 +404,8 @@ const MatrimonyHomeScreen = () => {
             </div>
           </div>
 
-          {/* Tips Section */}
-          <div className="mb-8 py-5">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">💡 Profile Tips</h3>
-            <div className="bg-white rounded-2xl shadow-lg p-6 flex items-center space-x-4">
-              <div className="bg-red-400 p-3 rounded-full flex-shrink-0">
-                <Camera size={20} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-gray-900 mb-3">Add more photos to get 3x more profile views!</p>
-                <button className="bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-100 transition-colors">
-                  Add Photos
-                </button>
-              </div>
-            </div>
-          </div>
+         
+         
           <div>
             <ViewDrive />
           </div>

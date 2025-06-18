@@ -63,6 +63,23 @@ const MatrimonyAdminDashboard = () => {
     fetchDrives();
   }, []);
 
+
+  useEffect(()=>{
+    axiosPublic.get(
+              `/user/display-photo?filename=AdharCard/bg-img.png`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+                responseType: 'blob',
+              }
+            )
+            .then(res =>{
+              console.log('Background image fetched successfully');
+              const url = URL.createObjectURL(res.data);
+            })
+  },[]);
+
   const fetchDrives = async () => {
       // Replace with your actual API endpoint
       const token = localStorage.getItem('token');
@@ -173,7 +190,13 @@ const MatrimonyAdminDashboard = () => {
   const formatDateForInput = (date) => {
     if (!date) return '';
     const d = typeof date === 'string' ? new Date(date) : date;
-    return d.toISOString().slice(0, 16);
+     const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   const filteredDrives = drives.filter(drive =>

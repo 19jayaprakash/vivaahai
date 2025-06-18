@@ -192,6 +192,10 @@ const ProfileViewPage = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
+
+  useEffect(()=>{
+       axiosPublic.post(`/`)
+  },[]);
  
   // Helper function to calculate age from date of birth
   const calculateAge = (dateOfBirth) => {

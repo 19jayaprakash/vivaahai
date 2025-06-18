@@ -145,10 +145,35 @@ const MatchCard = ({ match }) => {
   const[showMessageModal,setShowMessageModal] = useState(false);
  
   const router = useRouter();
+
+    async function ProfileView() {
+  const id = {
+    viewedUserId: match.profileId
+  };
  
+  try {
+    const res = await axiosPublic.post(
+      `/views/profile-view`,
+      id,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      }
+    );
+ 
+    if (res.status === 200) {
+      console.log(res.data);
+    }
+  } catch (err) {
+    toast.error("Error while fetching Profiles");
+    console.error(err);
+  }
+}
  
   const handleViewProfile = () => {
     router.push(`/Matches/${match.profileId}`);
+    ProfileView();
   };
  
   const handleScheduleMeet = (e) => {
@@ -157,13 +182,42 @@ const MatchCard = ({ match }) => {
     // setShowScheduleModal(true);
   };
  
-  const handleSendInterest = (e) => {
-    e.stopPropagation();
-  };
+   const handleSendInterest = async (e, interactionType,interactionCode) => {
+  e.stopPropagation();
  
-  const handleDontShow = (e) => {
-    e.stopPropagation();
-  };
+  try {
+    const token = localStorage.getItem('token');
+    const code = interactionCode ? 2 : 1 ;
+    const json = {
+      targetUserId: match.profileId,
+        interactionType: interactionType,
+    }
+    if(interactionType !== "disliked"){
+      json.interactionCode = code;
+    }
+    const response = await fetch('https://stu.globalknowledgetech.com:445/user/add-userInteraction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(json)
+    });
+ 
+    if (response.ok) {
+      toast.success("Your prefernece has been recorded successfully");
+      // Handle success (e.g., show success message, update UI)
+    } else {
+      console.error(`Failed to send ${interactionType}:`, response.status);
+      // Handle error
+    }
+  } catch (error) {
+    toast.error("Network error while sending interest. Please try again.");
+    console.error(`Error sending ${interactionType}:`, error);
+    // Handle network error
+  }
+};
+
  
   function calculateAge(dateString) {
   const today = new Date();
@@ -204,7 +258,7 @@ const MatchCard = ({ match }) => {
  
               </h2>
               <div className="text-sm text-gray-600 space-y-1">
-                <div>M11594600</div>
+                <div>M{match.profileId}</div>
              
               </div>
             </div>
@@ -254,14 +308,14 @@ const MatchCard = ({ match }) => {
           {/* Action Buttons */}
           <div className="flex gap-2 mb-2">
             <button
-              onClick={handleDontShow}
+             onClick={(e) =>handleSendInterest(e,"disliked",match.interactionCode)}
               className="flex cursor-pointer items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
             >
               <X size={12} />
               Don&apos;t Show
             </button>
             <button
-              onClick={handleSendInterest}
+              onClick={(e) =>handleSendInterest(e,"liked",match.interactionCode)}
               className="flex-1 cursor-pointer bg-[#FF6B6B] text-white py-2 px-4 rounded-lg font-semibold hover:bg-[#FF6B6E] transition-colors text-sm flex items-center justify-center gap-2"
             >
               <Heart size={12} />
@@ -454,7 +508,7 @@ const MessageModal = ({ isOpen, onClose, recipientId ,recipientName = "User" }) 
             placeholder="Type your message here..."
             rows={4}
             disabled={isLoading}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all duration-200 disabled:bg-gray-50 disabled:cursor-not-allowed"
           />
           <div className="flex items-center justify-between mt-3">
             <p className="text-xs text-gray-500">
@@ -516,11 +570,154 @@ const MatchesScreen = () => {
   const [selectedMinWeight, setSelectedMinWeight] = useState("");
   const [selectedEducation, setSelectedEducation] = useState("");
   const [selectedOccupation, setSelectedOccupation] = useState("");
+  const[selectedincome,setSelectedIncome] = useState("");
+  const[selectedsubcaste , setSelectedSubcaste] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [selectedCaste, setSelectedCaste] = useState("");
   const [selectedLifestyle, setSelectedLifestyle] = useState("");
+   const [occupationdata,setOccupationData] = useState([]);
+  const [educationOptions, setEducationOptions] = useState([]);
+  const [religionOption,setReligionOptions] = useState([]);
+  const [casteoptions,setCasteOptions] = useState([]);
+  const [subcasteoptions,setSubcasteOptions] = useState([]);
+  const [stateoption,setStateOptions] = useState([]);
+  const [cityoption,setCityOptions] = useState([]);
+  const [income,setIncome] = useState([]);
+ 
+useEffect(() => {
+    async function fetcheoccupation() {
+      try {
+        await axiosPublic.get('/utility/utilHead?utilHead=occupation')
+        .then(res =>{
+            setOccupationData(res.data.data);
+        })
+       
+      } catch (error) {
+        console.error('Error fetching income options:', error);
+      }
+    }
+ 
+    fetcheoccupation();
+  }, []);
+ 
+  useEffect(() => {
+    async function fetcheducation() {
+      try {
+        await axiosPublic.get('/utility/utilHead?utilHead=education_level')
+        .then(res =>{
+            setEducationOptions(res.data.data);
+        })
+       
+      } catch (error) {
+        console.error('Error fetching income options:', error);
+      }
+    }
+ 
+    fetcheducation();
+  }, []);
+ 
+useEffect(() => {
+    async function fetchIncome() {
+      try {
+        await axiosPublic.get('/utility/utilHead?utilHead=annual_income')
+        .then(res =>{
+            setIncome(res.data.data);
+        })
+      } catch (error) {
+        console.error('Error fetching income options:', error);
+      }
+    }
+ 
+    fetchIncome();
+  }, []);
+ 
+  // Fetch Religion Options
+    useEffect(() => {
+      async function fetchReligionOption() {
+        try {
+          const response = await axiosPublic.get('/utility/utilHead?utilHead=religion');
+          const result = response.data;
+          if (result && Array.isArray(result.data)) {
+            setReligionOptions(result.data);
+          }
+        } catch (error) {
+          console.error('Error fetching religion options:', error);
+        }
+      }
+      fetchReligionOption();
+    }, []);
+ 
+    useEffect(() => {
+        async function fetchCastes() {
+          try {
+            const response = await axiosPublic.get('/utility/utilHead?utilHead=caste');
+            const result = response.data;
+            if (result && Array.isArray(result.data)) {
+              setCasteOptions(result.data);
+            }
+          } catch (error) {
+            console.error('Error fetching caste options:', error);
+          }
+        }
+        fetchCastes();
+      }, []);
+ 
+      useEffect(() => {
+          async function fetchSubcastes() {
+            if (!selectedCaste) {
+              setSubcasteOptions([]);
+              return;
+            }
+            try {
+              const response = await axiosPublic.get(`/utility/parent?parentCode=${selectedCaste}`);
+              const result = response.data;
+             
+                setSubcasteOptions(result.data);
+             
+            } catch (error) {
+              console.error('Error fetching subcaste options:', error);
+            }
+          }
+          fetchSubcastes();
+        }, [selectedCaste]);
+ 
+         useEffect(() => {
+            async function fetchState() {
+              try {
+                const response = await axiosPublic.get('/utility/utilHead?utilHead=state');
+                const result = response.data;
+                if (result && Array.isArray(result.data)) {
+                  setStateOptions(result.data);
+                }
+              } catch (error) {
+                console.error('Error fetching state options:', error);
+              }
+            }
+            fetchState();
+          }, []);
+       
+          // Fetch Cities when state changes
+          useEffect(() => {
+            async function fetchCity() {
+              if (!selectedState) {
+                setCityOptions([]);
+                return;
+              }
+              try {
+                const stateValue = selectedState.replace(/\s+/g, '_');
+                const response = await axiosPublic.get(`/utility/parent?parentCode=${stateValue}`);
+                const result = response.data;
+                if (result && Array.isArray(result.data)) {
+                  setCityOptions(result.data);
+                }
+              } catch (error) {
+                console.error('Error fetching city options:', error);
+              }
+            }
+            fetchCity();
+          }, [selectedState]);
 
  async function getProfileRecommendation(){
     await axiosPublic.get(`/user/profile-recommendations`,{headers:{Authorization:`Bearer ${localStorage.getItem("token")}`}})
@@ -563,7 +760,9 @@ const MatchesScreen = () => {
     city: selectedCity,
     religion: selectedRegion,
     caste: selectedCaste,
-    lifestyle: selectedLifestyle
+    lifestyle: selectedLifestyle,
+    subcaste : selectedsubcaste,
+    annualincome : selectedincome
   };
  
   try {
@@ -606,6 +805,8 @@ const MatchesScreen = () => {
     setSelectedLifestyle("");
     setShowFilter(false);
     getProfileRecommendation();
+    setSelectedIncome("");
+    setSelectedSubcaste("");
   };
  
    return (
@@ -663,8 +864,8 @@ const MatchesScreen = () => {
  
             <div className="p-4 overflow-y-auto max-h-80">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  
+               {[
+                 
                   { label: "MinAge", value: selectedMinAge, options: MinAge, setter: setSelectedMinAge },
                   { label: "MaxAge", value: selectedMaxAge, options: MaxAge, setter: setSelectedMaxAge },
                   { label: "MinHeight", value: selectedMinHeight, options: Minheight, setter: setSelectedMinHeight },
@@ -672,13 +873,15 @@ const MatchesScreen = () => {
                   { label: "MinWeight", value: selectedMinWeight, options: Minweight, setter: setSelectedMinWeight },
                   { label: "MaxWeight", value: selectedMaxWeight, options: Maxweight, setter: setSelectedMaxWeight },
                   { label: "Gender", value: selectedGender, options: ["Male", "Female"], setter: setSelectedGender },
-                  // { label: "Education", value: selectedEducation, options: educationLevels, setter: setSelectedEducation },
-                  // { label: "Occupation", value: selectedOccupation, options: occupations, setter: setSelectedOccupation },
-                  { label: "State", value: selectedState, options: states, setter: setSelectedState },
-                  { label: "City", value: selectedCity, options: cities, setter: setSelectedCity },
-                  { label: "Religion", value: selectedRegion, options: religions, setter: setSelectedRegion },
-                  { label: "Caste", value: selectedCaste, options: castes, setter: setSelectedCaste },
-                  // { label: "Lifestyle", value: selectedLifestyle, options: lifestyles, setter: setSelectedLifestyle },
+                  { label: "Education", value: selectedEducation, options: educationOptions, setter: setSelectedEducation },
+                  { label: "Occupation", value: selectedOccupation, options: occupationdata, setter: setSelectedOccupation },
+                   { label: "Annual Income", value: selectedincome, options: income, setter: setSelectedIncome },
+                  { label: "State", value: selectedState, options: stateoption, setter: setSelectedState },
+                  { label: "City", value: selectedCity, options: cityoption, setter: setSelectedCity },
+                  { label: "Religion", value: selectedRegion, options: religionOption, setter: setSelectedRegion},
+                  { label: "Caste", value: selectedCaste, options: casteoptions, setter: setSelectedCaste },
+                  { label: "SubCaste", value: selectedsubcaste, options: subcasteoptions, setter: setSelectedSubcaste },
+                  //{ label: "Lifestyle", value: selectedLifestyle, options: lifestyles, setter: setSelectedLifestyle },
                 ].map((filter) => (
                   <div key={filter.label}>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -686,7 +889,7 @@ const MatchesScreen = () => {
                     </label>
                     <select
                       value={filter.value}
-                      onChange={(e) => filter.setter(e.target.value)}
+                      onChange={(e) => {filter.label === "Caste" ? setSelectedSubcaste(""):""; filter.setter(e.target.value);}}
                       className="w-full p-2.5 border border-gray-200 cursor-pointer rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-200 text-black bg-white text-sm"
                     >
                       <option value="">Select {filter.label}</option>

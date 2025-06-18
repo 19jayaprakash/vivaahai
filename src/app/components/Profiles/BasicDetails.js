@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { 
   User, 
   Phone, 
@@ -14,12 +14,16 @@ import {
   Sparkles,
   MapPin,
   ChevronsRight,
-  CheckCircle
+  CheckCircle,
+  RotateCcw
 } from 'lucide-react';
+import { Camera, Upload, X, Check } from 'lucide-react';
 import { axiosPublic } from '../../base/constant';
 import Toast from './ToastComponent';
 import {useRouter} from 'next/navigation';
 import { toast } from 'react-toastify';
+import SelfieComponent from './SelfieComponent';
+import AadharCardComponent from './AadharCardComponent';
 
 const MatrimonialProfile = ({nextStep,isEdit = false}) => {
     const router = useRouter();
@@ -482,6 +486,12 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
   };
   const countries = ['India'];
 
+
+  const[isAadharSubmitted,setIsAadharSubmitted] = useState(false);
+  const[isSelfieSubmitted,setIsSelfieSubmitted] = useState(false);
+
+
+
   return (
     <>
     <div className="min-h-screen text-black relative overflow-hidden">
@@ -513,6 +523,10 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
       {/* Main Content */}
        <div className="relative z-10 container mx-auto px-4">
         <div className="max-w-4xl mx-auto space-y-8">
+
+          <AadharCardComponent aadharStatus={isAadharSubmitted} onChange={(data)=>setIsAadharSubmitted(data)} />
+
+          <SelfieComponent selfieStatus={isSelfieSubmitted} onChange={(data)=>setIsSelfieSubmitted(data)} />
          
           {/* Personal Details */}
           <div className="bg-gray-100 backdrop-blur-sm rounded-2xl p-6 border border-[#FF6B6B]/30 transition-all duration-300">
@@ -964,7 +978,9 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
               </div>
             </div>
           </div>
- 
+
+          
+   
          
  
           {/* Submit Button */}
@@ -994,6 +1010,8 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
         </div>
       </div>
 
+
+     
       
     </div>
     {/* Toast Notification */}

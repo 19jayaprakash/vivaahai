@@ -327,7 +327,8 @@ export default function MatrimonyLanding() {
             <div className="flex-1 overflow-y-auto px-8 pb-6">
               {isLogin ? (
                 <div className="space-y-4">
-                  <div className="space-y-1">
+                  <form onSubmit={handleLogin}>
+                  <div className="space-y-1 mb-2">
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
@@ -364,11 +365,12 @@ export default function MatrimonyLanding() {
  
                   <button
                     type="submit"
-                    onClick={handleLogin}
+                    
                     className="w-full bg-[#FF6B6B] text-white py-3 rounded-xl font-semibold hover:bg-[#FF5252] hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer mt-6"
                   >
                     Sign In
                   </button>
+                  </form>
  
                   <div className="text-center mt-3">
                     <p className="text-gray-600">

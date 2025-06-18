@@ -130,6 +130,7 @@ const StepperSection = ({
       {!isLast && (
         <div className="absolute left-8 top-20 w-0.5 h-full bg-gradient-to-b from-[#FF6B6B] to-pink-200"></div>
       )}
+
       
       {/* Step Circle */}
       <div className="relative z-10 flex-shrink-0">

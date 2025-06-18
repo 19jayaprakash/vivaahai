@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, Upload, Edit, X, User, Check, RotateCcw, Loader2, Trash2, Image as ImageIcon, Star, StarOff } from 'lucide-react';
 import { axiosPublic } from '../../base/constant';
+import { toast } from 'react-toastify';
  
 const ProfileImageEditor = () => {
   const [profileImages, setProfileImages] = useState([]);
@@ -13,6 +14,7 @@ const ProfileImageEditor = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const [showImageGallery, setShowImageGallery] = useState(true);
+  const[isProfilePhotoUpload,setIsProfilePhotoUpload] = useState(false);
  
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -25,13 +27,16 @@ const ProfileImageEditor = () => {
 
    async function fetchImages() {
       try {
-        const res = await axiosPublic.get('/user/userPhoto-details', {
+        await axiosPublic.get('/user/userPhoto-details', {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
-        });
-       
-        setProfileImages(res.data);
+        })
+        .then(res =>{
+          if(res.status == 200){
+            setProfileImages(res.data || []);
+          }
+        })
       } catch (error) {
         console.error('Error fetching image data:', error);
       }
@@ -42,13 +47,17 @@ const ProfileImageEditor = () => {
   }, []);
 
   async function fetchImage() {
+    const profilePic = profileImages.find(pic => pic.isProfilePhoto === true);
+    if(profilePic){
+      const picName = profilePic.photoUrl.split("/");
       try {
         const res = await axiosPublic.get(
-          `/user/download-photo?filename=${profileImages[profileImages.length-1].photoUrl.split("/")[2]}`,
+          `/user/display-photo?filename=ProfilePics/${picName[picName.length-1]}`,
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
             },
+          
             responseType: 'blob',
           }
         );
@@ -57,6 +66,7 @@ const ProfileImageEditor = () => {
       } catch (error) {
         console.error('Failed to fetch image', error);
       }
+    }
     }
  
   useEffect(() => {
@@ -77,9 +87,11 @@ const ProfileImageEditor = () => {
         }));
       } else if (image.photoUrl) {
         // For existing images from server
-        const filename = image.photoUrl.split("/")[2];
+         const picName = image.photoUrl.split("/");
+         const folderName = picName[picName.length-2]
+        const filename = picName[picName.length-1];
         const res = await axiosPublic.get(
-          `/user/download-photo?filename=${filename}`,
+          `/user/display-photo?filename=${folderName}/${filename}`,
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
@@ -140,12 +152,8 @@ const ProfileImageEditor = () => {
      
       // Add filenames array if needed
       formData.append('filenames', JSON.stringify(filenames));
- 
-      console.log('Uploading multiple images to API:');
-      console.log('Endpoint: https://stu.globalknowledgetech.com:445/user/upload-photos');
-      console.log('Auth Token:', authToken);
-      console.log('Files count:', images.length);
-      console.log('Filenames:', filenames);
+      isProfilePhotoUpload && (formData.append("isProfilePhoto",true));
+      formData.append("photoType",isProfilePhotoUpload ? "profile" :"selfie" );
  
       // Simulate upload progress
       const progressInterval = setInterval(() => {
@@ -334,14 +342,21 @@ const ProfileImageEditor = () => {
   };
  
   // Remove image
-  const removeImage = (imageId) => {
-    setProfileImages(prev => prev.filter(img => (img.id || img._id) !== imageId));
-    // Clean up the URL from memory
-    setImageUrls(prev => {
-      const newUrls = { ...prev };
-      delete newUrls[imageId];
-      return newUrls;
-    });
+  const removeImage = async(imageId) => {
+
+    await axiosPublic.delete(`/user/delete-photo?filepath=${imageId}`,{headers:{
+      Authorization : `Bearer ${localStorage.getItem("token")}`
+    }})
+    .then(res =>{
+      if(res.status === 200){
+        toast.success("Image deleted successfully");
+        fetchImages();
+      }
+    })
+    .catch(err =>{
+      toast.error("Error while deleting photo. Please try again later.");
+    })
+    
   };
  
   // Set image as primary (move to index 0)
@@ -425,7 +440,7 @@ const ProfileImageEditor = () => {
       {/* Main Profile Image Circle - Shows 0th index image */}
       <div className="relative mx-auto w-48 h-48 mb-6">
         <div className="w-full h-full rounded-full overflow-hidden border-4 border-gray-200 shadow-lg bg-gray-100 flex items-center justify-center">
-          {profileImages.length > 0 ? (
+          {profileUrl ? (
             <img
               src={profileUrl}
               alt="Primary Profile"
@@ -445,7 +460,7 @@ const ProfileImageEditor = () => {
         */}
         {/* Edit Button */}
         <button
-          onClick={() => setShowEditOptions(true)}
+          onClick={() => {setShowEditOptions(true);setIsProfilePhotoUpload(true);}}
           disabled={isUploading}
           className="absolute bottom-4 right-0 bg-gradient-to-r cursor-pointer from-pink-300 to-[#FF6B6B] text-white p-3 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -461,7 +476,7 @@ const ProfileImageEditor = () => {
             Profile Images ({profileImages.length})
           </h3>
           <button
-            onClick={() => setShowEditOptions(true)}
+            onClick={() => {setShowEditOptions(true);setIsProfilePhotoUpload(false)}}
             disabled={isUploading}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
           >
@@ -484,17 +499,15 @@ const ProfileImageEditor = () => {
             </div>
           ) : (
             <div className="overflow-x-auto overflow-y-hidden cursor-pointer ">
-              <div className="flex gap-3 pb-2" style={{ width: 'max-content' }}>
+              <div className="flex gap-3 pb-5" style={{ width: 'max-content' }}>
                 {profileImages.map((image, index) => {
                   const imageId = image.id || image._id || index;
                   const imageUrl = imageUrls[imageId];
                   const isPrimary = index === 0;
  
                   return (
-                    <div key={imageId} className="relative group flex-shrink-0">
-                      <div className={`relative w-20 h-20 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 ${
-                        isPrimary ? 'ring-2 ring-blue-500 ring-offset-1' : 'hover:scale-105'
-                      }`}>
+                    <div key={imageId} className="relative group flex-shrink-0 pb-2">
+                      <div className={`relative w-20 h-20 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105`}>
                         {imageUrl ? (
                           <img
                             src={imageUrl}
@@ -509,15 +522,15 @@ const ProfileImageEditor = () => {
                         )}
                        
                         {/* Primary Badge */}
-                        {isPrimary && (
+                        {/* {isPrimary && (
                           <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded-full shadow-lg flex items-center gap-1">
                             <Star className="w-2 h-2 fill-current" />
                           </div>
                         )}
- 
+  */}
                         {/* Hover Actions */}
                         <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1">
-                          {!isPrimary && (
+                          {/* {!isPrimary && (
                             <button
                               onClick={() => setPrimaryImage(imageId)}
                               className="bg-blue-500 text-white p-1.5 rounded-full hover:bg-blue-600 transition-colors"
@@ -525,10 +538,10 @@ const ProfileImageEditor = () => {
                             >
                               <Star className="w-3 h-3" />
                             </button>
-                          )}
+                          )} */}
                           <button
-                            onClick={() => removeImage(imageId)}
-                            className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
+                            onClick={() => removeImage(image.photoUrl)}
+                            className="bg-red-500 text-white p-1.5 rounded-full cursor-pointer hover:bg-red-600 transition-colors"
                             title="Delete image"
                           >
                             <Trash2 className="w-3 h-3" />
