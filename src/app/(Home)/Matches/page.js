@@ -195,7 +195,7 @@ const MatchCard = ({ match }) => {
     if(interactionType !== "disliked"){
       json.interactionCode = code;
     }
-    const response = await fetch('https://stu.globalknowledgetech.com:445/user/add-userInteraction', {
+    const response = await fetch('https://stu.globalknowledgetech.com:9443/user/add-userInteraction', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -766,7 +766,7 @@ useEffect(() => {
  
   try {
    const token = localStorage.getItem('token');
-    const response = await fetch('https://stu.globalknowledgetech.com:445/search/search-users', {
+    const response = await fetch('https://stu.globalknowledgetech.com:9443/search/search-users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

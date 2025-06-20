@@ -81,7 +81,6 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
     height: '',
     weight: ''
   });
-
   // Fetch Mother Tongue Options
   useEffect(() => {
     async function fetchMotherTongue() {

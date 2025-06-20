@@ -40,7 +40,7 @@ export default function  InterestCard ({ person, type, onAction }) {
         if(interactionType !== "disliked"){
           json.interactionCode = 2;
         }
-        const response = await fetch('https://stu.globalknowledgetech.com:445/user/add-userInteraction', {
+        const response = await fetch('https://stu.globalknowledgetech.com:9443/user/add-userInteraction', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

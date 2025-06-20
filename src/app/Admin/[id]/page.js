@@ -29,7 +29,7 @@ export default function VerificationDetailsPage() {
           throw new Error('No authentication token found');
         }
  
-        const response = await fetch(`https://stu.globalknowledgetech.com:445/user/profile-verification?userId=${id}`, {
+        const response = await fetch(`https://stu.globalknowledgetech.com:9443/user/profile-verification?userId=${id}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -97,7 +97,7 @@ const handleVerification = async (field, action) => {
       requestBody.rejectionReason = rejectionReason.trim();
     }
  
-    const response = await fetch(`https://stu.globalknowledgetech.com:445/user/verify-profile-doc`, {
+    const response = await fetch(`https://stu.globalknowledgetech.com:9443/user/verify-profile-doc`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -167,7 +167,7 @@ const handleRejectWithReason = async () => {
       rejectionReason: reasonToSend
     };
  
-    const response = await fetch(`https://stu.globalknowledgetech.com:445/user/verify-profile-doc`, {
+    const response = await fetch(`https://stu.globalknowledgetech.com:9443/user/verify-profile-doc`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

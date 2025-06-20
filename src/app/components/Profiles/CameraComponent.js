@@ -30,10 +30,24 @@ const ProfileImageEditor = () => {
   const [profileUrl, setProfileUrl] = useState(null);
   const [imageUrls, setImageUrls] = useState({}); // Store multiple image URLs
 
-  const openModal = (e,image) => {
+  const openModal = async(e,image) => {
     e.preventDefault();
-    setSelectedImage(image);
     setIsModalOpen(true);
+    const picName = image.split("/");
+         const folderName = picName[picName.length-2]
+        const filename = picName[picName.length-1];
+        const res = await axiosPublic.get(
+          `/user/display-photo?filename=${folderName}/${filename}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+            responseType: 'blob',
+          }
+        );
+        const blobUrl = URL.createObjectURL(res.data);
+    setSelectedImage(blobUrl);
+    
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
   };
@@ -79,15 +93,15 @@ const ProfileImageEditor = () => {
 
   useEffect(()=>{
       async function fetchProfileUrl(){
-       await axiosPublic.get('/user/userPhoto-details', {
+       await axiosPublic.get('/user/get-profile-pics', {
                      headers: {
                        Authorization: `Bearer ${localStorage.getItem('token')}`
                      }
                    })
                    .then(res =>{
                     if(res.status === 200){
-                        if(res.data.length > 0){
-                          const profileUrl = res.data.find(pic => pic.isProfilePhoto === true);
+                        if(res.data.data.length > 0){
+                          const profileUrl = res.data.data[0];
                           if(profileUrl){
                             const picName = profileUrl.photoUrl.split("/");
                             axiosPublic.get(
@@ -204,7 +218,7 @@ const ProfileImageEditor = () => {
         });
       }, 200);
  
-      const response = await fetch('https://stu.globalknowledgetech.com:445/user/upload-photos', {
+      const response = await fetch('https://stu.globalknowledgetech.com:9443/user/upload-photos', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -711,7 +725,7 @@ const DeleteConfirmationModal = ({ image, isOpen, onClose, onConfirm }) => {
                         <div className="absolute inset-0 bg-black/30 bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1">
                          
                             <button
-                              onClick={(e) => openModal(e,imageUrl)}
+                              onClick={(e) => openModal(e,image.photoUrl)}
                               className="bg-blue-500 text-white p-1.5 rounded-full hover:bg-blue-600 cursor-pointer transition-colors"
                               title="Set as primary"
                             >

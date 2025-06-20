@@ -163,16 +163,24 @@ const confirmDelete = async (driveId) => {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await axiosPublic.post('/drive/drives', JSON.stringify(driveForm), {
+        const url = isUpdate ? `/admin/drives/${driveForm.driveId}` : '/drive/drives';
+        const response = await axiosPublic.post(url, JSON.stringify(driveForm), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
         });
 
-        if (response.status === 201) {
-          console.log('Drive created successfully:', driveForm);
-          setDrives([...drives, driveForm]);
+        if (response.status === 201 || response.status === 200) {
+          if(isUpdate){
+            setDrives(drives.map(drive =>
+              drive.driveId === driveForm.driveId ? response.data : drive
+            ))
+          }
+          else{
+            setDrives([...drives, driveForm]);
+          }
+          
           handleClose();
           toast.success(`Success: Drive ${isUpdate ? "Updated" : "created"} successfully!`);
         }
@@ -557,13 +565,13 @@ const confirmDelete = async (driveId) => {
                   icon={Users}
                   title="Total Users"
                   value={dashboardData?.totalUsers || 0}
-                  change={stats.monthlyGrowth}
+                  change={parseFloat(dashboardData?.totalUsersChange?.replace('%', '')) || 0}
                   color="blue"
                 />
                 <StatCard
                   icon={UserCheck}
                   title="Active Profiles"
-                  value={dashboardData?.totalUsers || 0}
+                  value={dashboardData?.activeUsers || 0}
                   change={8.2}
                   color="green"
                 />
@@ -627,7 +635,7 @@ const confirmDelete = async (driveId) => {
                   <p className="text-gray-600 mt-1">Manage matrimony drives and events</p>
                 </div>
                 <button
-                  onClick={() => setShowModal(true)}
+                  onClick={() => {setShowModal(true);setIsUpdate(false);}}
                   className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 cursor-pointer rounded-lg hover:from-pink-600 hover:to-purple-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
                 >
                   <Plus className="w-5 h-5" />
@@ -713,7 +721,7 @@ const confirmDelete = async (driveId) => {
                             </button>
 
                             {/* Delete Button */}
-                            <button
+                            {/* <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteDrive(drive);
@@ -735,7 +743,7 @@ const confirmDelete = async (driveId) => {
                                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                 />
                               </svg>
-                            </button>
+                            </button> */}
                           </div>
 
                           {/* Mobile Action Buttons (Always Visible on Small Screens) */}
