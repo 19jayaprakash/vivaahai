@@ -130,8 +130,7 @@ const MatrimonyHomeScreen = () => {
     try {
       const token = localStorage.getItem("token");
       const id = localStorage.getItem("userId");
-      const res = await axiosPublic.get(
-        `https://stu.globalknowledgetech.com:445/horoscope/getHoroscope/${id}`,
+      const res = await axiosPublic.get(`/horoscope/getHoroscope/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
