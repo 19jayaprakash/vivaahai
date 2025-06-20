@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { axiosPublic } from '../../base/constant';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
 
 const AadharInformation = ({ selfieStatus,onChange }) => {
   const [captureMethod, setCaptureMethod] = useState('');
@@ -196,8 +197,10 @@ const AadharInformation = ({ selfieStatus,onChange }) => {
         {/* Preview Image */}
         {previewImage && (
           <div className="relative">
-            <img
+            <Image
               src={previewImage}
+                width={500}
+                height={500}
               alt="Aadhar document preview"
               className="w-full max-h-64 object-contain rounded-lg border border-[#FF6B6B]/30"
             />

@@ -136,17 +136,17 @@ const HorizontalDrivesCarousel = () => {
     router.push('/RegisterDrive');
   };
  
-  if (screenWidth === 0 || drives.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="text-center p-8 bg-white rounded-3xl shadow-xl border-4 border-dashed border-gray-300">
-          <div className="text-6xl mb-4">📮</div>
-          <div className="text-2xl font-bold text-gray-700 mb-2">No Invitations Available</div>
-          <div className="text-gray-500">Your mailbox is empty. Check back soon!</div>
-        </div>
-      </div>
-    );
-  }
+  // if (screenWidth === 0 || drives.length === 0) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-blue-50">
+  //       <div className="text-center p-8 bg-white rounded-3xl shadow-xl border-4 border-dashed border-gray-300">
+  //         <div className="text-6xl mb-4">📮</div>
+  //         <div className="text-2xl font-bold text-gray-700 mb-2">No Invitations Available</div>
+  //         <div className="text-gray-500">Your mailbox is empty. Check back soon!</div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
  
   return (
     <div className="py-8  min-h-screen">
@@ -177,7 +177,9 @@ const HorizontalDrivesCarousel = () => {
         }}
         onScroll={handleScroll}
       >
-        {drives.map((drive, index) => {
+        {drives.length > 0 ?
+        (
+        drives.map((drive, index) => {
           const theme = getDriveTypeTheme(drive.driveType);
           const dateInfo = formatDate(drive.driveDate);
          
@@ -269,7 +271,7 @@ const HorizontalDrivesCarousel = () => {
                   {/* Description */}
                   <div className="text-center mb-6">
                     <p className="text-gray-700 text-sm md:text-base leading-relaxed font-medium italic max-w-xs">
-                      "{drive.driveDescription?.charAt(0).toUpperCase() + drive.driveDescription?.slice(1) || ''}"
+                      &quot;{drive.driveDescription?.charAt(0).toUpperCase() + drive.driveDescription?.slice(1) || ''}&quot;
                     </p>
                   </div>
  
@@ -311,7 +313,7 @@ const HorizontalDrivesCarousel = () => {
                   <div className="text-center mt-6">
                     <div className="text-xs font-serif tracking-wider text-gray-500 uppercase mb-3 font-medium">Kindly Respond</div>
                     <button
-                      className={`bg-gradient-to-r ${theme.buttonGradient} text-white font-serif font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white`}
+                      className={`bg-gradient-to-r ${theme.buttonGradient} text-white cursor-pointer font-serif font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-white`}
                       onClick={(e) => {
                         e.stopPropagation();
                         navigateToRegisterPage(drive);
@@ -334,7 +336,18 @@ const HorizontalDrivesCarousel = () => {
               </div>
             </div>
           );
-        })}
+        })
+      )
+
+        : 
+        <div className="flex items-center justify-center h-64 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center p-8 bg-white rounded-3xl shadow-xl border-4 border-dashed border-gray-300">
+          <div className="text-6xl mb-4">📮</div>
+          <div className="text-2xl font-bold text-gray-700 mb-2">No Invitations Available</div>
+          <div className="text-gray-500">Your mailbox is empty. Check back soon!</div>
+        </div>
+      </div>
+      }
       </div>
  
       {/* Elegant Pagination */}

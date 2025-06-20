@@ -114,7 +114,7 @@ const MatrimonyHomeScreen = () => {
                   width={400}
                   height={600}
                   alt="Profile"
-                  className="w-full h-full object-cover  transition-transform duration-500 hover:scale-105 cursor-pointer"
+                  className="w-full h-full object-cover  transition-transform duration-500 hover:scale-105"
                   loading="lazy"
                 />
               )}
@@ -310,7 +310,7 @@ const [timeLeft, setTimeLeft] = useState('');
                   width={400}
                   height={600}
                   alt="Profile"
-                  className="w-full h-full object-cover rounded-full transition-transform duration-500 hover:scale-105 cursor-pointer"
+                  className="w-full h-full object-cover rounded-full transition-transform duration-500 hover:scale-105"
                   loading="lazy"
                 /> 
                 :

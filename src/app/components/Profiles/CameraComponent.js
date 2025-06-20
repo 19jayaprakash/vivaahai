@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Camera, Upload, Edit, X, User, Check, RotateCcw, Loader2, Trash2, Image as ImageIcon, Star, StarOff } from 'lucide-react';
+import { Camera, Upload, Edit, X, User, Check, RotateCcw, Loader2, Trash2, Image as ImageIcon, Star, StarOff, Eye } from 'lucide-react';
 import { axiosPublic } from '../../base/constant';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
  
 const ProfileImageEditor = () => {
   const [profileImages, setProfileImages] = useState([]);
@@ -15,6 +16,10 @@ const ProfileImageEditor = () => {
   const [uploadProgress, setUploadProgress] = useState({});
   const [showImageGallery, setShowImageGallery] = useState(true);
   const[isProfilePhotoUpload,setIsProfilePhotoUpload] = useState(false);
+  const[selectedImage,setSelectedImage] = useState(null);
+  const[isModalOpen,setIsModalOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
  
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -25,16 +30,42 @@ const ProfileImageEditor = () => {
   const [profileUrl, setProfileUrl] = useState(null);
   const [imageUrls, setImageUrls] = useState({}); // Store multiple image URLs
 
+  const openModal = (e,image) => {
+    e.preventDefault();
+    setSelectedImage(image);
+    setIsModalOpen(true);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedImage(null);
+    // Restore body scroll
+    document.body.style.overflow = 'unset';
+  };
+
+  const openDeleteModal = (image, e) => {
+    e.stopPropagation(); // Prevent opening the image modal
+    setImageToDelete(image);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setImageToDelete(null);
+  };
+
    async function fetchImages() {
       try {
-        await axiosPublic.get('/user/userPhoto-details', {
+        await axiosPublic.get('/user/get-general-photos', {
           headers: {
             Authorization: `Bearer ${authToken}`
           }
         })
         .then(res =>{
           if(res.status == 200){
-            setProfileImages(res.data || []);
+            setProfileImages(res.data.data || []);
           }
         })
       } catch (error) {
@@ -46,35 +77,42 @@ const ProfileImageEditor = () => {
     fetchImages();
   }, []);
 
-  async function fetchImage() {
-    const profilePic = profileImages.find(pic => pic.isProfilePhoto === true);
-    if(profilePic){
-      const picName = profilePic.photoUrl.split("/");
-      try {
-        const res = await axiosPublic.get(
-          `/user/display-photo?filename=ProfilePics/${picName[picName.length-1]}`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          
-            responseType: 'blob',
-          }
-        );
-        const blobUrl = URL.createObjectURL(res.data);
-        setProfileUrl(blobUrl);
-      } catch (error) {
-        console.error('Failed to fetch image', error);
+  useEffect(()=>{
+      async function fetchProfileUrl(){
+       await axiosPublic.get('/user/userPhoto-details', {
+                     headers: {
+                       Authorization: `Bearer ${localStorage.getItem('token')}`
+                     }
+                   })
+                   .then(res =>{
+                    if(res.status === 200){
+                        if(res.data.length > 0){
+                          const profileUrl = res.data.find(pic => pic.isProfilePhoto === true);
+                          if(profileUrl){
+                            const picName = profileUrl.photoUrl.split("/");
+                            axiosPublic.get(
+                              `/user/display-photo?filename=ProfilePics/${picName[picName.length-1]}`,
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${authToken}`,
+                                },
+                                responseType: 'blob',
+                              }
+                            ).then(res => {
+                              const blobUrl = URL.createObjectURL(res.data);
+                              setProfileUrl(blobUrl);
+                            }).catch(err => {
+                              console.error('Error fetching profile image:', err);
+                            });
+                          }
+                        }
+                    }
+                   })
       }
-    }
-    }
- 
-  useEffect(() => {
-    
-    if(profileImages.length > 0) {
-      fetchImage();
-    }
-  }, [profileImages]);
+      fetchProfileUrl();
+  },[]);
+
+
  
   // Fetch individual image URLs for gallery
   const fetchImageUrl = async (image, index) => {
@@ -153,7 +191,7 @@ const ProfileImageEditor = () => {
       // Add filenames array if needed
       formData.append('filenames', JSON.stringify(filenames));
       isProfilePhotoUpload && (formData.append("isProfilePhoto",true));
-      formData.append("photoType",isProfilePhotoUpload ? "profile" :"selfie" );
+      isProfilePhotoUpload && formData.append("photoType","profile" );
  
       // Simulate upload progress
       const progressInterval = setInterval(() => {
@@ -304,6 +342,7 @@ const ProfileImageEditor = () => {
   // Retake photo
   const retakePhoto = () => {
     setCapturedImage(null);
+    initializeCamera();
   };
  
   // Handle multiple file selection and upload
@@ -395,6 +434,142 @@ const ProfileImageEditor = () => {
       });
     };
   }, [stream, imageUrls]);
+
+  const ImageModal = ({ image, isOpen, onClose }) => {
+  if (!isOpen || !image) return null;
+
+  // Handle click outside modal
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  // Handle escape key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black/80 bg-opacity-75 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+    >
+      <div className="relative max-w-4xl max-h-full">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 cursor-pointer text-white bg-black/30 bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-10 transition-all duration-200"
+          aria-label="Close modal"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        {/* Image */}
+        <div className="relative">
+          <Image
+            src={image}
+            alt={image.title || 'Profile Image'}
+            width={800}
+            height={600}
+            className="max-w-full max-h-[90vh] text-white object-contain rounded-lg"
+            priority
+          />
+          
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DeleteConfirmationModal = ({ image, isOpen, onClose, onConfirm }) => {
+  if (!isOpen || !image) return null;
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    onConfirm(image.id);
+    onClose();
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black/30 bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="p-6">
+          <div className="flex items-center mb-4">
+            <div className="flex-shrink-0">
+              <svg
+                className="w-10 h-10 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <div className="ml-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Delete Photo
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Are you sure you want to delete?
+              </p>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-600 mb-6">
+            This action cannot be undone. The photo will be permanently removed from your gallery.
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-200"
+            >
+              Delete Photo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
  
   return (
     <div className="flex flex-col items-center space-y-6 p-8">
@@ -441,7 +616,9 @@ const ProfileImageEditor = () => {
       <div className="relative mx-auto w-48 h-48 mb-6">
         <div className="w-full h-full rounded-full overflow-hidden border-4 border-gray-200 shadow-lg bg-gray-100 flex items-center justify-center">
           {profileUrl ? (
-            <img
+            <Image
+              width={192}
+              height={192}
               src={profileUrl}
               alt="Primary Profile"
               className="w-full h-full object-cover"
@@ -498,21 +675,23 @@ const ProfileImageEditor = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto overflow-y-hidden cursor-pointer ">
-              <div className="flex gap-3 pb-5" style={{ width: 'max-content' }}>
+            <div className="overflow-x-auto overflow-y-hidden  ">
+              <div className="flex gap-3 pb-1" style={{ width: 'max-content' }}>
                 {profileImages.map((image, index) => {
                   const imageId = image.id || image._id || index;
                   const imageUrl = imageUrls[imageId];
                   const isPrimary = index === 0;
  
                   return (
-                    <div key={imageId} className="relative group flex-shrink-0 pb-2">
-                      <div className={`relative w-20 h-20 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105`}>
+                    <div key={imageId} className="relative group flex-shrink-0 pb-0">
+                      <div className={`relative w-30 h-30 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105`}>
                         {imageUrl ? (
-                          <img
+                          <Image
+                            width={150}
+                            height={150}
                             src={imageUrl}
                             alt={`Profile ${index + 1}`}
-                            className="w-full h-full object-cover cursor-pointer"
+                            className="w-full h-full object-cover"
                             onClick={() => setPrimaryImage(imageId)}
                           />
                         ) : (
@@ -529,29 +708,24 @@ const ProfileImageEditor = () => {
                         )}
   */}
                         {/* Hover Actions */}
-                        <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1">
-                          {/* {!isPrimary && (
+                        <div className="absolute inset-0 bg-black/30 bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-1">
+                         
                             <button
-                              onClick={() => setPrimaryImage(imageId)}
-                              className="bg-blue-500 text-white p-1.5 rounded-full hover:bg-blue-600 transition-colors"
+                              onClick={(e) => openModal(e,imageUrl)}
+                              className="bg-blue-500 text-white p-1.5 rounded-full hover:bg-blue-600 cursor-pointer transition-colors"
                               title="Set as primary"
                             >
-                              <Star className="w-3 h-3" />
+                              <Eye className="w-3 h-3" />
                             </button>
-                          )} */}
+                          
                           <button
-                            onClick={() => removeImage(image.photoUrl)}
+                            onClick={(e) => openDeleteModal(image, e)}
                             className="bg-red-500 text-white p-1.5 rounded-full cursor-pointer hover:bg-red-600 transition-colors"
                             title="Delete image"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
-                      </div>
- 
-                      {/* Image filename tooltip on hover */}
-                      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                        {image.filename || `Image ${index + 1}`}
                       </div>
                     </div>
                   );
@@ -665,7 +839,9 @@ const ProfileImageEditor = () => {
                 </div>
               ) : (
                 <div className="relative">
-                  <img
+                  <Image
+                    width={500}
+                    height={500}
                     src={capturedImage}
                     alt="Captured"
                     className="w-full h-80 object-cover rounded-xl"
@@ -705,9 +881,22 @@ const ProfileImageEditor = () => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        multiple
+        multiple = {isProfilePhotoUpload ? false : true}
         onChange={handleFileChange}
         className="hidden"
+      />
+
+      <ImageModal
+        image={selectedImage}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+      />
+
+      <DeleteConfirmationModal
+        image={imageToDelete}
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={() => removeImage(imageToDelete?.photoUrl)}
       />
  
       <style jsx>{`

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { axiosPublic } from '../../base/constant';
+import { ArrowLeft } from 'lucide-react';
 
 const DriveRegistrationPage = () => {
   const [loading, setLoading] = useState(false);
@@ -160,6 +161,11 @@ const DriveRegistrationPage = () => {
     }
   };
 
+  const handleBack = () =>{
+    localStorage.removeItem("driveData");
+    window.history.back();
+  }
+
   if (!driveData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -170,6 +176,17 @@ const DriveRegistrationPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-200 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <button
+            onClick={handleBack}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 cursor-pointer transition-colors"
+          >
+            <ArrowLeft size={20} />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+      </div>
       <div className="max-w-2xl mx-auto px-5 py-8">
         {/* Header */}
         <div className="text-center mb-8">

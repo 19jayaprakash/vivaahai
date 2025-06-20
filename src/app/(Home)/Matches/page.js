@@ -760,9 +760,8 @@ useEffect(() => {
     city: selectedCity,
     religion: selectedRegion,
     caste: selectedCaste,
-    lifestyle: selectedLifestyle,
     subcaste : selectedsubcaste,
-    annualincome : selectedincome
+    annualIncome : selectedincome
   };
  
   try {
