@@ -185,7 +185,6 @@ const DetailItem = ({ icon: Icon, label, value, iconColor = "text-gray-400" }) =
 );
  
 const ProfileViewPage = () => {
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -276,9 +275,7 @@ const ProfileViewPage = () => {
     toast.success(`Interest sent to ${name}!`);
   };
  
-  const handleScheduleMeet = () => {
-    setShowScheduleModal(true);
-  };
+
  
   // Loading state
   if (loading) {
@@ -350,13 +347,7 @@ const ProfileViewPage = () => {
                 <Heart size={16} />
                 Send Interest
               </button>
-              <button
-                onClick={handleScheduleMeet}
-                className="bg-gradient-to-r cursor-pointer from-blue-500 to-blue-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <Calendar size={16} />
-                Schedule Meet
-              </button>
+             
             </div>
  
             {/* Activity Status */}

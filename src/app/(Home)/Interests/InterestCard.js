@@ -25,6 +25,12 @@ export default function  InterestCard ({ person, type, onAction }) {
     const handleViewProfile = () => {
     router.push(`/Matches/${person.id}`);
     };
+
+    const handleScheduleMeet = (e) => {
+    e.stopPropagation();
+    router.push("/ScheduleMeet")
+    // setShowScheduleModal(true);
+  };
  
  
   const handleSendInterest = async (e, interactionType) => {
@@ -214,7 +220,7 @@ export default function  InterestCard ({ person, type, onAction }) {
                 <Video size={8} />
                 Video
               </button>
-              <button className="flex-1 cursor-pointer bg-pink-50 hover:bg-pink-100 text-pink-600 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1">
+              <button className="flex-1 cursor-pointer bg-pink-50 hover:bg-pink-100 text-pink-600 py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1" onClick={e => handleScheduleMeet(e)}>
                 <Calendar size={8} />
                 Meet
               </button>
@@ -232,15 +238,13 @@ export default function  InterestCard ({ person, type, onAction }) {
         {type === 'viewed' && (
           <div className="flex gap-2">
             <button
-              onClick={() => onAction(person.id, 'send_interest')}
+              onClick={handleViewProfile} 
               className="flex-1 cursor-pointer bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white py-2 rounded-lg font-medium text-xs flex items-center justify-center gap-1"
             >
-              <Heart size={10} />
-              Send Interest
+               <Eye size={10} />
+              View Profile
             </button>
-            <button className="px-3 cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-medium text-xs flex items-center justify-center">
-              <Eye size={10} onClick={handleViewProfile} />
-            </button>
+           
           </div>
         )}
       </div>

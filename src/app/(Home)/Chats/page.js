@@ -150,60 +150,61 @@ useEffect(()=>{
               <p className="text-gray-500">No conversations found</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {filteredChats.map((chat) => (
-                <div
-                  key={chat.id}
-                  onClick={() => handleChatClick(chat.chatId)}
-                  className="flex items-center p-4 hover:bg-gray-50 cursor-pointer transition-colors group"
-                >
-                  {/* Avatar */}
-                  <div className="relative flex-shrink-0 mr-4">
-                    {/* <img
-                      src={User}
-                      alt={chat.firstName}
-                      className="w-12 h-12 rounded-full object-cover"
-                    /> */}
-                    <User className="w-10 h-10 text-black rounded-full object-cover" />
-                    {chat.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
-                    )}
-                  </div>
+           <div className="divide-y divide-gray-100">
+  {filteredChats.map((chat) => (
+    <div
+      key={chat.chatId}
+      onClick={() => handleChatClick(chat.chatId)}
+      className={`flex items-center p-4 cursor-pointer transition-colors group ${
+        chat.unreadCount > 0 
+          ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-l-blue-500' 
+          : 'hover:bg-gray-50'
+      }`}
+    >
+      {/* Avatar */}
+      <div className="relative flex-shrink-0 mr-4">
+        <User className="w-10 h-10 text-black rounded-full object-cover" />
+        {chat.isOnline && (
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+        )}
+      </div>
 
-                  {/* Chat Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-semibold text-gray-900 truncate">
-                        {chat.firstName + " "+chat.lastName ||''}
-                      </h3>
-                      {/* <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {formatTimestamp(chat.timestamp)}
-                        </span>
-                        {chat.unreadCount > 0 && (
-                          <div className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                            {chat.unreadCount}
-                          </div>
-                        )}
-                      </div> */}
-                    </div>
-                    {/* <p className="text-sm text-gray-600 truncate">
-                      {chat.lastMessage}
-                    </p> */}
-                  </div>
-
-                  {/* Action Buttons (visible on hover) */}
-                  {/* <div className="hidden group-hover:flex items-center space-x-2 ml-4">
-                    <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                      <Phone className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors">
-                      <Video className="w-4 h-4" />
-                    </button>
-                  </div> */}
-                </div>
-              ))}
+      {/* Chat Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className={`text-sm truncate ${
+            chat.unreadCount > 0 
+              ? 'font-bold text-gray-900' 
+              : 'font-semibold text-gray-900'
+          }`}>
+            {chat.firstName + " " + chat.lastName || ''}
+          </h3>
+          
+          {/* Unread Count Badge */}
+          {chat.unreadCount > 0 && (
+            <div className="bg-blue-600 text-white text-xs font-medium rounded-full min-w-5 h-5 flex items-center justify-center px-1.5 ml-2">
+              {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
             </div>
+          )}
+        </div>
+        
+        {/* You can uncomment this if you want to show last message */}
+        {/* <p className={`text-sm truncate ${
+          chat.unreadCount > 0 ? 'text-gray-700 font-medium' : 'text-gray-600'
+        }`}>
+          {chat.lastMessage}
+        </p> */}
+      </div>
+
+      {/* Optional: Add a visual indicator for unread messages */}
+      {chat.unreadCount > 0 && (
+        <div className="flex-shrink-0 ml-2">
+          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+        </div>
+      )}
+    </div>
+  ))}
+</div>
           )}
         </div>
 

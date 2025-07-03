@@ -25,7 +25,9 @@ import {
   Phone,
   Mail,
   User,
-  Delete
+  Delete,
+  Mars,
+  Venus
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { axiosPublic } from '../base/constant';
@@ -52,39 +54,87 @@ const MatrimonyAdminDashboard = () => {
   const [loadingProfiles, setLoadingProfiles] = useState(false);
   const [validatingProfile, setValidatingProfile] = useState(null);
   const [screenWidth, setScreenWidth] = useState(0);
-  const[dashboardData, setDashboardData] = useState(null);
-  const[isUpdate,setIsUpdate] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [isUpdate, setIsUpdate] = useState(false);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-const [driveToDelete, setDriveToDelete] = useState(null);
+  const [driveToDelete, setDriveToDelete] = useState(null);
 
-const handleDeleteDrive = (drive) => {
-  setDriveToDelete(drive);
-  setDeleteModalOpen(true);
-};
+  const [showCasteDropdown, setShowCasteDropdown] = useState(false);
+  const [showProfessionDropdown, setShowProfessionDropdown] = useState(false);
+  const[showLocationDropdown, setShowLocationDropdown] = useState(false);
 
-useEffect(()=>{
-    axiosPublic.get(`/dashboard/overview`)
+  const[cityOptions, setCityOptions] = useState([]);
+  const[religionOptions, setReligionOptions] = useState([]);
+  const[casteOptions, setCasteOptions] = useState([]);
+  const[professionOptions, setProfessionOptions] = useState([]);
+
+  useEffect(()=>{
+    axiosPublic.get('/utility/parent?parentCode=Tamil_Nadu')
     .then(res =>{
-      console.log(res);
       if(res.status === 200){
-        setDashboardData(res.data);
+        setCityOptions(res.data.data);
       }
     })
-},[]);
+    .catch(err =>{
+      console.log(err);
+    })
+    axiosPublic.get('/utility/utilHead?utilHead=religion')
+    .then(res =>{
+      if(res.status === 200){
+        setReligionOptions(res.data.data);
+      }
+    })
+    .catch(err =>{
+      console.log(err);
+    })
+    axiosPublic.get('/utility/utilHead?utilHead=caste')
+    .then(res =>{
+      if(res.status === 200){
+        setCasteOptions(res.data.data);
+      }
+    })
+    .catch(err =>{
+      console.log(err);
+    })
+    axiosPublic.get('/utility/utilHead?utilHead=occupation')
+    .then(res =>{
+      if(res.status === 200){
+        setProfessionOptions(res.data.data);
+      }
+    })
+    .catch(err =>{
+      console.log(err);
+    })
+  },[]);
+
+  const handleDeleteDrive = (drive) => {
+    setDriveToDelete(drive);
+    setDeleteModalOpen(true);
+  };
+
+  useEffect(() => {
+    axiosPublic.get(`/dashboard/overview`)
+      .then(res => {
+        console.log(res);
+        if (res.status === 200) {
+          setDashboardData(res.data);
+        }
+      })
+  }, []);
 
 
-const confirmDelete = async (driveId) => {
-  try {
-    // Update your drives list
-    setDrives(prev => prev.filter(drive => drive.driveId !== driveId));
-    
-    console.log(`Successfully deleted drive with ID: ${driveId}`);
-  } catch (error) {
-    console.error('Failed to delete drive:', error);
-    // Handle error (show toast notification, etc.)
-  }
-};
+  const confirmDelete = async (driveId) => {
+    try {
+      // Update your drives list
+      setDrives(prev => prev.filter(drive => drive.driveId !== driveId));
+
+      console.log(`Successfully deleted drive with ID: ${driveId}`);
+    } catch (error) {
+      console.error('Failed to delete drive:', error);
+      // Handle error (show toast notification, etc.)
+    }
+  };
 
   const CARD_WIDTH = screenWidth < 768 ? screenWidth * 0.85 : screenWidth < 1024 ? screenWidth * 0.45 : 420;
   const CARD_MARGIN = screenWidth < 768 ? 30 : 25;
@@ -109,6 +159,12 @@ const confirmDelete = async (driveId) => {
     location: '',
     driveType: 'free',
     registrationFee: 0,
+    minAge: '',
+    maxAge: '',
+    userLocation: [],
+    religion: '',
+    caste: [], // Array for multi-select
+    profession: [] // Array for multi-select
   });
 
   // Fetch drives on component mount
@@ -172,15 +228,15 @@ const confirmDelete = async (driveId) => {
         });
 
         if (response.status === 201 || response.status === 200) {
-          if(isUpdate){
+          if (isUpdate) {
             setDrives(drives.map(drive =>
               drive.driveId === driveForm.driveId ? response.data : drive
             ))
           }
-          else{
+          else {
             setDrives([...drives, driveForm]);
           }
-          
+
           handleClose();
           toast.success(`Success: Drive ${isUpdate ? "Updated" : "created"} successfully!`);
         }
@@ -239,24 +295,24 @@ const confirmDelete = async (driveId) => {
   };
 
   const filteredDrives = drives.filter(drive => {
-  // Search term filter (existing logic)
-  const searchMatch = !searchTerm || 
-    drive?.driveName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-    drive?.location?.toLowerCase().includes(searchTerm?.toLowerCase());
-  
-  // Drive type filter (new logic)
-  const typeMatch = (() => {
-    if (!filterType || filterType === 'all') {
-      return true; // Show all drives
-    }
-    
-    // Assuming your drive object has a 'type' field with values like 'free', 'paid', 'invitation'
-    return drive?.driveType?.toLowerCase() === filterType.toLowerCase();
-  })();
-  
-  // Both conditions must be true
-  return searchMatch && typeMatch;
-});
+    // Search term filter (existing logic)
+    const searchMatch = !searchTerm ||
+      drive?.driveName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      drive?.location?.toLowerCase().includes(searchTerm?.toLowerCase());
+
+    // Drive type filter (new logic)
+    const typeMatch = (() => {
+      if (!filterType || filterType === 'all') {
+        return true; // Show all drives
+      }
+
+      // Assuming your drive object has a 'type' field with values like 'free', 'paid', 'invitation'
+      return drive?.driveType?.toLowerCase() === filterType.toLowerCase();
+    })();
+
+    // Both conditions must be true
+    return searchMatch && typeMatch;
+  });
 
   const getDriveTypeTheme = (type) => {
     switch (type) {
@@ -332,85 +388,122 @@ const confirmDelete = async (driveId) => {
   };
 
   const handleEditDrive = (drive) => {
-  console.log('Editing drive:', drive);
+    console.log('Editing drive:', drive);
     setIsUpdate(true);
     setDriveForm(drive);
     setShowModal(true);
-};
+  };
 
-  const DeleteConfirmationModal = ({ drive, isOpen, onClose, onConfirm }) => {
-  if (!isOpen || !drive) return null;
+  const[selectedDriveId, setSelectedDriveId] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const[loading,setLoading] = useState(false);
+  const[registeredUsers, setRegisteredUsers] = useState([]);
+  const[error,setError] = useState(null);
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
+
+  const handleViewDrive = async (driveId) => {
+    setSelectedDriveId(driveId);
+    setViewModalOpen(true);
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+
+      const response = await fetch(`https://stu.globalknowledgetech.com:9443/drive/get-registeredUsersByDriveId/${driveId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setRegisteredUsers(data);
+    } catch (error) {
+      console.error('Error fetching registered users:', error);
+      setError('Failed to load registered users');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleConfirmDelete = () => {
-    onConfirm(drive.id);
-    onClose();
-  };
+  const DeleteConfirmationModal = ({ drive, isOpen, onClose, onConfirm }) => {
+    if (!isOpen || !drive) return null;
 
-  return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={handleBackdropClick}
-    >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
-        <div className="p-6">
-          <div className="flex items-center mb-4">
-            <div className="flex-shrink-0">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
+    const handleBackdropClick = (e) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    };
+
+    const handleConfirmDelete = () => {
+      onConfirm(drive.id);
+      onClose();
+    };
+
+    return (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        onClick={handleBackdropClick}
+      >
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all">
+          <div className="p-6">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-6 h-6 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Delete Invitation
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Are you sure you want to delete &quot;{drive.driveName}&quot;?
+                </p>
               </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Delete Invitation
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Are you sure you want to delete &quot;{drive.driveName}&quot;?
-              </p>
-            </div>
-          </div>
-          
-          <div className="text-sm text-gray-600 mb-6 bg-red-50 p-3 rounded-lg border border-red-100">
-            <strong>Warning:</strong> This action cannot be undone. All registrations and related data will be permanently deleted.
-          </div>
 
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmDelete}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200"
-            >
-              Delete Invitation
-            </button>
+            <div className="text-sm text-gray-600 mb-6 bg-red-50 p-3 rounded-lg border border-red-100">
+              <strong>Warning:</strong> This action cannot be undone. All registrations and related data will be permanently deleted.
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200"
+              >
+                Delete Invitation
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   const StatCard = ({ icon: Icon, title, value, change, color = "blue" }) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-300 hover:scale-105">
@@ -497,6 +590,382 @@ const confirmDelete = async (driveId) => {
     </div>
   );
 
+
+  const ViewRegistrationsModal = ({ drive, isOpen, onClose, registeredUsers, loading, error }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    if (!isOpen || !drive) return null;
+
+    const handleBackdropClick = (e) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    };
+
+    // Helper function to check if payment details exist
+    const hasPaymentDetails = (registration) => {
+      return registration.paymentStatus || registration.paymentMode || registration.transactionId;
+    };
+
+    // Helper function to get gender icon
+    // const getGenderIcon = (gender) => {
+    //   if (!gender) return null;
+
+    //   const genderLower = gender.toLowerCase();
+    //   if (genderLower === 'male' || genderLower === 'm') {
+    //     return (
+    //       <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+    //         <path d="M10 2a6 6 0 016 6c0 2.887-2.047 5.28-4.769 5.855L13 16h2v2h-2v2h-2v-2H9v-2h2l1.769-2.145A6 6 0 1110 2z"/>
+    //       </svg>
+    //     );
+    //   } else if (genderLower === 'female' || genderLower === 'f') {
+    //     return (
+    //       <svg className="w-3 h-3 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
+    //         <path d="M10 2a6 6 0 100 12 6 6 0 000-12zm0 10a4 4 0 110-8 4 4 0 010 8zm0 2c-1.105 0-2 .895-2 2v2h4v-2c0-1.105-.895-2-2-2z"/>
+    //       </svg>
+    //     );
+    //   }
+    //   return null;
+    // };
+    const getGenderIcon = (gender) => {
+      if (!gender) return null;
+
+      const genderLower = gender.toLowerCase();
+
+      if (genderLower === 'male' || genderLower === 'm') {
+        return <Mars className="w-4 h-4 text-blue-500" />;
+      } else if (genderLower === 'female' || genderLower === 'f') {
+        return <Venus className="w-4 h-4 text-pink-500" />;
+      }
+
+      return null;
+    };
+
+    // Pagination calculations
+    const totalItems = registeredUsers?.length || 0;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = registeredUsers?.slice(startIndex, endIndex) || [];
+
+    // // Reset to first page when data changes
+    // useEffect(() => {
+    //   setCurrentPage(1);
+    // }, [registeredUsers]);
+
+    const goToPage = (page) => {
+      setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    };
+
+    return (
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        onClick={handleBackdropClick}
+      >
+        <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full mx-4 max-h-[90vh] overflow-hidden transform transition-all">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Registered Users
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Drive: &quot;{drive.driveName}&quot;
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+            {loading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600">Loading registered users...</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <div className="flex">
+                  <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!loading && !error && registeredUsers && (
+              <>
+                <div className="mb-4 flex justify-between items-center">
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <p className="text-sm text-blue-800">
+                      <strong>Total Registrations:</strong> {totalItems}
+                    </p>
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="text-sm text-gray-600">
+                      Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems}
+                    </div>
+                  )}
+                </div>
+
+                {registeredUsers.length === 0 ? (
+                  <div className="text-center py-8">
+                    <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p className="text-gray-500 text-lg">No registrations found</p>
+                    <p className="text-gray-400 text-sm mt-1">This drive has no registered users yet.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              ID
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Name
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Email
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Phone
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              City
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Status
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Docs
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Registration Date
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                              Payment Details
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {currentItems.map((registration, index) => (
+                            <tr key={registration.registrationId || index} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                                  {registration.registrationId}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                <div className="flex items-center space-x-2">
+                                  <div>
+                                    <div className="font-medium flex items-center space-x-1">
+
+                                      <span>{registration.UserProfile?.firstName || 'N/A'}</span>
+                                      {getGenderIcon(registration.UserProfile?.gender)}
+                                    </div>
+                                    {registration.UserProfile?.gender && (
+                                      <div className="text-xs text-gray-500 capitalize">
+                                        {registration.UserProfile.gender}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900">
+                                <div className="max-w-xs truncate" title={registration.UserProfile?.email}>
+                                  {registration.UserProfile?.email || 'N/A'}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {registration.UserProfile?.primaryContact || 'N/A'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {registration.UserProfile?.city || 'N/A'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${registration.status === 'registered'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                  {registration.status || 'Unknown'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${registration.documentsSubmitted
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                  }`}>
+                                  {registration.documentsSubmitted ? 'Submitted' : 'Pending'}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {registration.registrationDate
+                                  ? new Date(registration.registrationDate).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })
+                                  : 'N/A'
+                                }
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900">
+                                {hasPaymentDetails(registration) ? (
+                                  <div className="space-y-1">
+                                    {registration.paymentStatus && (
+                                      <div>
+                                        <span className="text-xs font-medium text-gray-600">Status:</span>
+                                        <span className={`ml-1 px-2 py-1 rounded text-xs font-medium ${registration.paymentStatus?.toLowerCase() === 'completed'
+                                            ? 'bg-green-100 text-green-800'
+                                            : registration.paymentStatus?.toLowerCase() === 'pending'
+                                              ? 'bg-yellow-100 text-yellow-800'
+                                              : 'bg-gray-100 text-gray-800'
+                                          }`}>
+                                          {registration.paymentStatus}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {registration.paymentMode && (
+                                      <div>
+                                        <span className="text-xs font-medium text-gray-600">Mode:</span>
+                                        <span className="ml-1 text-xs">{registration.paymentMode}</span>
+                                      </div>
+                                    )}
+                                    {registration.transactionId && (
+                                      <div>
+                                        <span className="text-xs font-medium text-gray-600">Txn ID:</span>
+                                        <span className="ml-1 text-xs font-mono bg-gray-100 px-1 rounded">
+                                          {registration.transactionId.length > 12
+                                            ? `${registration.transactionId.substring(0, 12)}...`
+                                            : registration.transactionId
+                                          }
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-gray-400">No payment info</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="mt-6 flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => goToPage(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Previous
+                          </button>
+
+                          {/* Page Numbers */}
+                          <div className="flex items-center space-x-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                              let pageNum;
+                              if (totalPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                              } else {
+                                pageNum = currentPage - 2 + i;
+                              }
+
+                              return (
+                                <button
+                                  key={pageNum}
+                                  onClick={() => goToPage(pageNum)}
+                                  className={`px-3 py-1 text-sm font-medium rounded-md ${currentPage === pageNum
+                                      ? 'bg-blue-600 text-white'
+                                      : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                                    }`}
+                                >
+                                  {pageNum}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <button
+                            onClick={() => goToPage(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Next
+                          </button>
+                        </div>
+
+                        <div className="text-sm text-gray-700">
+                          Page {currentPage} of {totalPages}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
       {/* Header */}
@@ -527,11 +996,11 @@ const confirmDelete = async (driveId) => {
             <div className="space-y-2">
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                { id: 'matches', label: 'Matches', icon: Heart },
                 { id: 'drives', label: 'Drive Management', icon: Calendar },
+                { id: 'verify', label: 'Verify Profiles', icon: BadgeCheck },
+                { id: 'matches', label: 'Matches', icon: Heart },
                 { id: 'messages', label: 'Messages', icon: MessageSquare },
                 { id: 'reviews', label: 'Reviews', icon: Star },
-                { id: 'verify', label: 'Verify Profiles', icon: BadgeCheck },
                 { id: 'users', label: 'User Management', icon: Users }
               ].map(item => (
                 <button
@@ -635,7 +1104,7 @@ const confirmDelete = async (driveId) => {
                   <p className="text-gray-600 mt-1">Manage matrimony drives and events</p>
                 </div>
                 <button
-                  onClick={() => {setShowModal(true);setIsUpdate(false);}}
+                  onClick={() => { setShowModal(true); setIsUpdate(false); }}
                   className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 cursor-pointer rounded-lg hover:from-pink-600 hover:to-purple-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg"
                 >
                   <Plus className="w-5 h-5" />
@@ -675,13 +1144,13 @@ const confirmDelete = async (driveId) => {
               {/* Drives Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDrives.length > 0 ? (
-                  filteredDrives.map((drive, index) => {
+                  filteredDrives.map((drive) => {
                     const theme = getDriveTypeTheme(drive.driveType);
                     const dateInfo = formatDate(drive.driveDate);
 
                     return (
                       <div
-                        key={drive.id}
+                        key={drive.driveId}
                         className="flex-shrink-0 group"
                         style={{
                           width: `310px`,
@@ -716,6 +1185,36 @@ const confirmDelete = async (driveId) => {
                                   strokeLinejoin="round"
                                   strokeWidth={2}
                                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewDrive(drive.driveId);
+                              }}
+                              className="bg-blue-500 hover:bg-blue-600 cursor-pointer text-white p-2.5 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 hover:rotate-3 border-2 border-white backdrop-blur-sm"
+                              aria-label="View registrations"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                 />
                               </svg>
                             </button>
@@ -988,10 +1487,12 @@ const confirmDelete = async (driveId) => {
               ) : profile.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {profile.map((profileData) => (
-                    <VerificationCard
-                      key={profileData.userId}
-                      profileData={profileData}
-                    />
+                    <div key={profileData.userId}>
+                      <VerificationCard
+
+                        profileData={profileData}
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -1023,119 +1524,248 @@ const confirmDelete = async (driveId) => {
 
       {/* Create Drive Modal */}
       {showModal && (
+        // <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        //   <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+        //     <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        //       <h2 className="text-lg font-semibold text-gray-900">Create New Drive</h2>
+        //       <button
+        //         onClick={handleClose}
+        //         className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        //       >
+        //         <X className="w-5 h-5 text-gray-500" />
+        //       </button>
+        //     </div>
+
+        //     <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        //       <div className="space-y-2">
+        //         <label className="block text-sm font-medium text-gray-700">Title *</label>
+        //         <input
+        //           type="text"
+        //           className="w-full px-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //           placeholder="Enter drive title"
+        //           value={driveForm.driveName || ''}
+        //           onChange={(e) => setDriveForm({ ...driveForm, driveName: e.target.value })}
+        //         />
+        //       </div>
+
+        //       <div className="space-y-2">
+        //         <label className="block text-sm font-medium text-gray-700">Description *</label>
+        //         <textarea
+        //           className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+        //           placeholder="Enter drive description"
+        //           rows={3}
+        //           value={driveForm.driveDescription || ''}
+        //           onChange={(e) => setDriveForm({ ...driveForm, driveDescription: e.target.value })}
+        //         />
+        //       </div>
+
+        //       {/* Drive Type Selection */}
+        //       <div className="space-y-2">
+        //         <label className="block text-sm font-medium text-gray-700">
+        //           Drive Type *
+        //         </label>
+        //         <div className="space-y-2">
+        //           {['free', 'paid', 'invitation'].map((type) => (
+        //             <button
+        //               key={type}
+        //               type="button"
+        //               className={`w-full flex items-center space-x-3 p-3 border text-black rounded-md transition-colors ${driveForm.driveType.toLowerCase() === type
+        //                 ? 'border-blue-500 bg-blue-50'
+        //                 : 'border-gray-300 hover:bg-gray-50'
+        //                 }`}
+        //               onClick={() => handleDriveTypeSelect(type)}
+        //             >
+        //               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${driveForm.driveType.toLowerCase() === type
+        //                 ? 'border-blue-500'
+        //                 : 'border-gray-300'
+        //                 }`}>
+        //                 {driveForm.driveType.toLowerCase() === type && (
+        //                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+        //                 )}
+        //               </div>
+        //               <span className={`text-sm ${driveForm.driveType.toLowerCase() === type
+        //                 ? 'text-blue-700 font-medium'
+        //                 : 'text-gray-700'
+        //                 }`}>
+        //                 {type.charAt(0).toUpperCase() + type.slice(1)}
+        //               </span>
+        //             </button>
+        //           ))}
+        //         </div>
+        //       </div>
+
+        //       {/* Registration Fee - Only show for paid drives */}
+        //       {driveForm.driveType.toLowerCase() === 'paid' && (
+        //         <div className="space-y-2">
+        //           <label className="block text-sm font-medium text-gray-700">
+        //             Registration Fee *
+        //           </label>
+        //           <div className="relative">
+        //             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+        //               ₹
+        //             </span>
+        //             <input
+        //               type="text"
+        //               className="w-full pl-8 pr-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //               placeholder="0.00"
+        //               value={driveForm.registrationFee || ''}
+        //               onChange={(e) => handleFeeInputChange(e.target.value)}
+        //             />
+        //           </div>
+        //           <p className="text-xs text-gray-500">Enter the registration fee amount</p>
+        //         </div>
+        //       )}
+
+        //       {/* Show info for invitation type */}
+        //       {driveForm.driveType.toLowerCase() === 'invitation' && (
+        //         <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+        //           <p className="text-sm text-blue-700">
+        //             💌 Invitation-only drives require participants to have an invitation code to register.
+        //           </p>
+        //         </div>
+        //       )}
+
+        //       <div className="space-y-2">
+        //         <label className="block text-sm font-medium text-gray-700">Date & Time *</label>
+        //         <input
+        //           type="datetime-local"
+        //           className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //           value={formatDateForInput(driveForm.driveDate)}
+        //           onChange={handleDateChange}
+        //         />
+        //       </div>
+
+        //       <div className="space-y-2">
+        //         <label className="block text-sm font-medium text-gray-700">Location *</label>
+        //         <input
+        //           type="text"
+        //           className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        //           placeholder="Enter location"
+        //           value={driveForm.location || ''}
+        //           onChange={(e) => setDriveForm({ ...driveForm, location: e.target.value })}
+        //         />
+        //       </div>
+        //     </div>
+
+        //     <div className="flex justify-end space-x-3 p-4 border-t border-gray-200">
+        //       <button
+        //         onClick={handleClose}
+        //         className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+        //       >
+        //         Cancel
+        //       </button>
+        //       <button
+        //         onClick={handleCreateDrive}
+        //         className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-md hover:from-pink-600 hover:to-purple-600 transition-all duration-200 shadow-md hover:shadow-lg"
+        //       >
+        //         {isUpdate ? "Update" : "Cretae"} Drive
+        //       </button>
+        //     </div>
+        //   </div>
+        // </div>
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Create New Drive</h2>
-              <button
-                onClick={handleClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
+  <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+    <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <h2 className="text-lg font-semibold text-gray-900">Create New Drive</h2>
+      <button
+        onClick={handleClose}
+        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+      >
+        <X className="w-5 h-5 text-gray-500" />
+      </button>
+    </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Title *</label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter drive title"
-                  value={driveForm.driveName || ''}
-                  onChange={(e) => setDriveForm({ ...driveForm, driveName: e.target.value })}
-                />
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Title *</label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter drive title"
+          value={driveForm.driveName || ''}
+          onChange={(e) => setDriveForm({ ...driveForm, driveName: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Description *</label>
+        <textarea
+          className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          placeholder="Enter drive description"
+          rows={3}
+          value={driveForm.driveDescription || ''}
+          onChange={(e) => setDriveForm({ ...driveForm, driveDescription: e.target.value })}
+        />
+      </div>
+
+      {/* Drive Type Selection */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">
+          Drive Type *
+        </label>
+        <div className="space-y-2">
+          {['free', 'paid', 'invitation'].map((type) => (
+            <button
+              key={type}
+              type="button"
+              className={`w-full flex items-center space-x-3 p-3 border text-black rounded-md transition-colors ${driveForm.driveType.toLowerCase() === type
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:bg-gray-50'
+                }`}
+              onClick={() => handleDriveTypeSelect(type)}
+            >
+              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${driveForm.driveType.toLowerCase() === type
+                ? 'border-blue-500'
+                : 'border-gray-300'
+                }`}>
+                {driveForm.driveType.toLowerCase() === type && (
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                )}
               </div>
+              <span className={`text-sm ${driveForm.driveType.toLowerCase() === type
+                ? 'text-blue-700 font-medium'
+                : 'text-gray-700'
+                }`}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Description *</label>
-                <textarea
-                  className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="Enter drive description"
-                  rows={3}
-                  value={driveForm.driveDescription || ''}
-                  onChange={(e) => setDriveForm({ ...driveForm, driveDescription: e.target.value })}
-                />
-              </div>
+      {/* Registration Fee - Only show for paid drives */}
+      {driveForm.driveType.toLowerCase() === 'paid' && (
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Registration Fee *
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              ₹
+            </span>
+            <input
+              type="text"
+              className="w-full pl-8 pr-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="0.00"
+              value={driveForm.registrationFee || ''}
+              onChange={(e) => handleFeeInputChange(e.target.value)}
+            />
+          </div>
+          <p className="text-xs text-gray-500">Enter the registration fee amount</p>
+        </div>
+      )}
 
-              {/* Drive Type Selection */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Drive Type *
-                </label>
-                <div className="space-y-2">
-                  {['free', 'paid', 'invitation'].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      className={`w-full flex items-center space-x-3 p-3 border text-black rounded-md transition-colors ${driveForm.driveType.toLowerCase() === type
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:bg-gray-50'
-                        }`}
-                      onClick={() => handleDriveTypeSelect(type)}
-                    >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${driveForm.driveType.toLowerCase() === type
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                        }`}>
-                        {driveForm.driveType.toLowerCase() === type && (
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        )}
-                      </div>
-                      <span className={`text-sm ${driveForm.driveType.toLowerCase() === type
-                        ? 'text-blue-700 font-medium'
-                        : 'text-gray-700'
-                        }`}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+      {/* Show info for invitation type */}
+      {driveForm.driveType.toLowerCase() === 'invitation' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+          <p className="text-sm text-blue-700">
+            💌 Invitation-only drives require participants to have an invitation code to register.
+          </p>
+        </div>
+      )}
 
-              {/* Registration Fee - Only show for paid drives */}
-              {driveForm.driveType.toLowerCase() === 'paid' && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Registration Fee *
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                      ₹
-                    </span>
-                    <input
-                      type="text"
-                      className="w-full pl-8 pr-3 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="0.00"
-                      value={driveForm.registrationFee || ''}
-                      onChange={(e) => handleFeeInputChange(e.target.value)}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">Enter the registration fee amount</p>
-                </div>
-              )}
-
-              {/* Show info for invitation type */}
-              {driveForm.driveType.toLowerCase() === 'invitation' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                  <p className="text-sm text-blue-700">
-                    💌 Invitation-only drives require participants to have an invitation code to register.
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={formatDateForInput(driveForm.driveDate)}
-                  onChange={handleDateChange}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Location *</label>
+      <div className="space-y-2">
+                 <label className="block text-sm font-medium text-gray-700">Location *</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1144,32 +1774,299 @@ const confirmDelete = async (driveId) => {
                   onChange={(e) => setDriveForm({ ...driveForm, location: e.target.value })}
                 />
               </div>
-            </div>
 
-            <div className="flex justify-end space-x-3 p-4 border-t border-gray-200">
-              <button
-                onClick={handleClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateDrive}
-                className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-md hover:from-pink-600 hover:to-purple-600 transition-all duration-200 shadow-md hover:shadow-lg"
-              >
-               {isUpdate ? "Update" : "Cretae"} Drive
-              </button>
-            </div>
-          </div>
+      {/* Age Range Section */} 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Participant&apos;s Min Age</label>
+          <select
+            className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={driveForm.minAge || ''}
+            onChange={(e) => setDriveForm({ ...driveForm, minAge: e.target.value })}
+          >
+            <option value="">Select Min Age</option>
+            {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
+              <option key={age} value={age}>{age}</option>
+            ))}
+          </select>
         </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Participant&apos;s Max Age</label>
+          <select
+            className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={driveForm.maxAge || ''}
+            onChange={(e) => setDriveForm({ ...driveForm, maxAge: e.target.value })}
+          >
+            <option value="">Select Max Age</option>
+            {Array.from({ length: 43 }, (_, i) => i + 18).map(age => (
+              <option key={age} value={age}>{age}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      
+{/* Location Dropdown */}
+       <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Participant&apos;s Location</label>
+        <div className="relative">
+          <div
+            className="w-full px-3 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-h-[40px] flex items-center"
+            onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+          >
+            <div className="flex flex-wrap gap-1 flex-1">
+              {driveForm.userLocation && driveForm.userLocation.length > 0 ? (
+                driveForm.userLocation.map((item, index) => (
+                  <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs flex items-center">
+                    {item}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newLocation = driveForm.userLocation.filter((_, i) => i !== index);
+                        setDriveForm({ ...driveForm, userLocation: newLocation });
+                      }}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500">Select Location(s)</span>
+              )}
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </div>
+          
+          {showLocationDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              {cityOptions.map((locationOption) => (
+                <div
+                  key={locationOption}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                  onClick={() => {
+                    const currentLocation = driveForm.userLocation || [];
+                    const isSelected = currentLocation.includes(locationOption);
+                    
+                    if (isSelected) {
+                      const newLocation = currentLocation.filter(item => item !== locationOption);
+                      setDriveForm({ ...driveForm, userLocation: newLocation });
+                    } else {
+                      setDriveForm({ ...driveForm, userLocation: [...currentLocation, locationOption] });
+                    }
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={driveForm.userLocation?.includes(locationOption) || false}
+                    onChange={() => {}}
+                    className="mr-2"
+                  />
+                  <span className="text-black">{locationOption}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+
+      {/* Religion Dropdown */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Participant&apos;s Religion</label>
+        <select
+          className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          value={driveForm.religion || ''}
+          onChange={(e) => setDriveForm({ ...driveForm, religion: e.target.value })}
+        >
+          <option value="">Select Religion</option>
+          {religionOptions.map((religion) => (
+            <option key={religion} value={religion}>{religion}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Caste Multi-select */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Participant&apos;s Caste</label>
+        <div className="relative">
+          <div
+            className="w-full px-3 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-h-[40px] flex items-center"
+            onClick={() => setShowCasteDropdown(!showCasteDropdown)}
+          >
+            <div className="flex flex-wrap gap-1 flex-1">
+              {driveForm.caste && driveForm.caste.length > 0 ? (
+                driveForm.caste.map((item, index) => (
+                  <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs flex items-center">
+                    {item}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newCaste = driveForm.caste.filter((_, i) => i !== index);
+                        setDriveForm({ ...driveForm, caste: newCaste });
+                      }}
+                      className="ml-1 text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500">Select Caste(s)</span>
+              )}
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </div>
+          
+          {showCasteDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              {casteOptions.map((casteOption) => (
+                <div
+                  key={casteOption}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                  onClick={() => {
+                    const currentCaste = driveForm.caste || [];
+                    const isSelected = currentCaste.includes(casteOption);
+                    
+                    if (isSelected) {
+                      const newCaste = currentCaste.filter(item => item !== casteOption);
+                      setDriveForm({ ...driveForm, caste: newCaste });
+                    } else {
+                      setDriveForm({ ...driveForm, caste: [...currentCaste, casteOption] });
+                    }
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={driveForm.caste?.includes(casteOption) || false}
+                    onChange={() => {}}
+                    className="mr-2"
+                  />
+                  <span className="text-black">{casteOption}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Profession Multi-select */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Participant&apos;s Profession</label>
+        <div className="relative">
+          <div
+            className="w-full px-3 py-2 border border-gray-300 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer min-h-[40px] flex items-center"
+            onClick={() => setShowProfessionDropdown(!showProfessionDropdown)}
+          >
+            <div className="flex flex-wrap gap-1 flex-1">
+              {driveForm.profession && driveForm.profession.length > 0 ? (
+                driveForm.profession.map((item, index) => (
+                  <span key={index} className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs flex items-center">
+                    {item}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newProfession = driveForm.profession.filter((_, i) => i !== index);
+                        setDriveForm({ ...driveForm, profession: newProfession });
+                      }}
+                      className="ml-1 text-green-600 hover:text-green-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500">Select Profession(s)</span>
+              )}
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </div>
+          
+          {showProfessionDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              {professionOptions.map((professionOption) => (
+                <div
+                  key={professionOption}
+                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                  onClick={() => {
+                    const currentProfession = driveForm.profession || [];
+                    const isSelected = currentProfession.includes(professionOption);
+                    
+                    if (isSelected) {
+                      const newProfession = currentProfession.filter(item => item !== professionOption);
+                      setDriveForm({ ...driveForm, profession: newProfession });
+                    } else {
+                      setDriveForm({ ...driveForm, profession: [...currentProfession, professionOption] });
+                    }
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={driveForm.profession?.includes(professionOption) || false}
+                    onChange={() => {}}
+                    className="mr-2"
+                  />
+                  <span className="text-black">{professionOption}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Date & Time *</label>
+        <input
+          type="datetime-local"
+          className="w-full px-3 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          value={formatDateForInput(driveForm.driveDate)}
+          onChange={handleDateChange}
+        />
+      </div>
+    </div>
+
+    <div className="flex justify-end space-x-3 p-4 border-t border-gray-200">
+      <button
+        onClick={handleClose}
+        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleCreateDrive}
+        className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-pink-500 to-purple-500 rounded-md hover:from-pink-600 hover:to-purple-600 transition-all duration-200 shadow-md hover:shadow-lg"
+      >
+        {isUpdate ? "Update" : "Create"} Drive
+      </button>
+    </div>
+  </div>
+</div>
       )}
 
       <DeleteConfirmationModal
-  drive={driveToDelete}
-  isOpen={deleteModalOpen}
-  onClose={() => setDeleteModalOpen(false)}
-  onConfirm={() => confirmDelete(driveToDelete.driveId)}
-/>
+        drive={driveToDelete}
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={() => confirmDelete(driveToDelete.driveId)}
+      />
+
+      <ViewRegistrationsModal
+        drive={drives.find(d => d.driveId === selectedDriveId)}
+        isOpen={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedDriveId(null);
+          setRegisteredUsers([]);
+          setError(null);
+        }}
+        registeredUsers={registeredUsers}
+        loading={loading}
+        error={error}
+      />
 
       {/* Custom Styles */}
       <style jsx>{`

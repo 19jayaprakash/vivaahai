@@ -55,6 +55,8 @@ const DriveRegistrationPage = () => {
     const json = JSON.stringify({
         driveId : driveData.driveId,
         registrationDate : new Date(),
+        // paymentStatus : "paid",
+        // paymentMode : "UPI"
         
     })
 

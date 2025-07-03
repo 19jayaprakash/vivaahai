@@ -77,6 +77,9 @@ export default function MatrimonyLanding() {
         if(response.data.roleId === 1){
           router.push("/Admin");
         }
+        else if(response.data.roleId === 3){
+          router.push("/Manager");
+        }
         else {
           if(response.data.isBasicProfileSubmitted) {
             router.push('/Home');

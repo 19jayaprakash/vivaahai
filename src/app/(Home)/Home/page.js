@@ -238,15 +238,29 @@ const MatrimonyHomeScreen = () => {
 
   const [filteredMatches, setFilteredMatches] = useState([]);
   useEffect(() => {
+
+    axiosPublic.post(`/recommendations/generate`,{},{
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+      }
+      })
+      .catch(err =>{
+        console.error(err);
+      })
+
     axiosPublic
-      .get(`/user/profile-recommendations`, {
+      .get(`recommendations/getrecommendations`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
       .then((res) => {
         if (res.status === 200) {
-          setFilteredMatches(res.data.recommendations);
+          setFilteredMatches(res.data.data);
         }
-      });
+      })
+      .catch(err =>{
+        console.error("Error fetching recommendations:", err);
+        toast.error("Failed to fetch recommendations. Please try again later.");
+      })
   }, []);
 
   const InterestCard = ({ person, type = "incoming" }) => {
@@ -402,7 +416,7 @@ const MatrimonyHomeScreen = () => {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gradient-to-r from-red-400 to-pink-400 text-white px-4 md:px-6 py-4 rounded-b-3xl shadow-lg">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
             <button
               onClick={() => setActiveTab("Regular")}
               className={`px-5 py-2.5 rounded-full font-semibold transition-all ${
@@ -423,7 +437,7 @@ const MatrimonyHomeScreen = () => {
             >
               PRIME ●
             </button>
-          </div>
+          </div> */}
         </div>
       </header>
 
@@ -453,7 +467,7 @@ const MatrimonyHomeScreen = () => {
                 <p className="text-gray-600 text-sm">VivaahAI Matrimony</p>
                 <div className="flex items-center space-x-3 mt-2">
                   <span className="text-gray-600 text-sm">Free Member</span>
-                  <button className="bg-red-400 cursor-pointer hover:bg-red-500 text-white px-4 py-1 rounded-full text-xs font-semibold transition-colors">
+                  <button className="bg-red-400 cursor-pointer hover:bg-red-500 text-white px-4 py-1 rounded-full text-xs font-semibold transition-colors" onClick={()=>{router.push("/Plans")}}>
                     Upgrade
                   </button>
                 </div>
@@ -564,9 +578,9 @@ const MatrimonyHomeScreen = () => {
           {/* Profile Cards */}
           <div className="overflow-x-auto pb-4">
             <div className="flex space-x-4 min-w-max md:grid md:grid-cols-5 md:gap-4 md:min-w-0">
-              {filteredMatches.map((profile) => (
-                <div key={profile.profileId}>
-                  <InterestCard person={profile} />
+              {filteredMatches.map((profile,index) => (
+                <div key={index}>
+                  <InterestCard person={profile?.recommendedUser?.UserProfile} />
                 </div>
               ))}
             </div>

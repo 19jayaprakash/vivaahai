@@ -218,7 +218,7 @@ const closeRejectionModal = () => {
     const filename = urlParts.slice(2).join('/'); // Skip "VivaahAI-UAT" and userId parts
    
     const token = localStorage.getItem('token');
-    const fullUrl = `https://stu.globalknowledgetech.com:445/user/display-photo?filename=${filename}`;
+    const fullUrl = `https://stu.globalknowledgetech.com:9443/user/display-photo?filename=${filename}&userId=${id}`;
    
     setShowDocument({ url: fullUrl, title, token });
     setImageError(false);
@@ -378,7 +378,6 @@ const closeRejectionModal = () => {
       const response = await fetch(showDocument.url, {
         headers: {
           'Authorization': `Bearer ${showDocument.token}`,
-       
         },
        
       });

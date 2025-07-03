@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Send, Smile, Paperclip, Phone, Video, MoreVertical, User } from 'lucide-react';
+import { ArrowLeft, Send, Smile, Paperclip, Phone, Video, MoreVertical, User, Info, X } from 'lucide-react';
 import {useRouter, useParams } from 'next/navigation';
 import { axiosPublic } from '../../../base/constant';
 
@@ -13,6 +13,7 @@ const ChatInterface = () => {
   const router = useRouter();
   const[userName,setUserName] = useState("User");
   const[loggedInUserId,setLoggedInUserId] = useState(null);
+  const[chatPersonalization,setChatPersonalization] = useState(0);
 
   useEffect(()=>{
     const storedId = localStorage.getItem("userId");
@@ -21,8 +22,22 @@ const ChatInterface = () => {
     }
   },[]);
 
+  
+
   const params = useParams();
     const id = params.id;
+
+    useEffect(()=>{
+      axiosPublic.get(`/conversation/score/${id}`,{headers:{Authorization:`Bearer ${localStorage.getItem("token")}`}})
+      .then(res =>{
+        if(res.status === 200){
+        setChatPersonalization(res.data.data);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching chat personalization score:", err);
+      });
+  },[]);
 
     useEffect(()=>{
         axiosPublic.get(`/chat/${id}/getmessages`,{headers:{Authorization:`Bearer ${localStorage.getItem("token")}`}})
@@ -127,9 +142,15 @@ const ChatInterface = () => {
   };
 
   const groupedMessages = groupMessagesByDate(messages);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
+
+  const toggleInfoPopup = () => {
+    setShowInfoPopup(!showInfoPopup);
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <>
+    <div className="flex flex-col h-screen relative bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
@@ -148,11 +169,6 @@ const ChatInterface = () => {
             </button>
             
             <div className="relative">
-              {/* <img
-                src={chatUser.avatar}
-                alt={chatUser.name}
-                className="w-10 h-10 rounded-full object-cover"
-              /> */}
               <User className="w-10 h-10 rounded-full object-cover" />
               {chatUser.isOnline && (
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
@@ -160,9 +176,18 @@ const ChatInterface = () => {
             </div>
             
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold text-gray-900 truncate">
-                {userName}
-              </h1>
+              <div className="flex items-center space-x-2">
+                <h1 className="text-lg font-semibold text-gray-900 truncate">
+                  {userName}
+                </h1>
+                <button
+                  onClick={toggleInfoPopup}
+                  className="p-1 hover:bg-gray-100 cursor-pointer rounded-full transition-colors"
+                  title="View chat info"
+                >
+                  <Info className="w-4 h-4 text-gray-500 hover:text-gray-700" />
+                </button>
+              </div>
               <p className="text-sm text-gray-500">
                 {chatUser.isOnline ? chatUser.lastSeen : 'Offline'}
               </p>
@@ -182,6 +207,9 @@ const ChatInterface = () => {
           </div>
         </div>
       </div>
+
+
+    
 
       {/* Messages Container */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
@@ -271,7 +299,7 @@ const ChatInterface = () => {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3">
+      <div className="bg-white border-t sticky bottom-0 border-gray-200 px-4 py-3">
         <div className="flex items-end space-x-3">
           <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
             <Paperclip className="w-5 h-5" />
@@ -302,7 +330,67 @@ const ChatInterface = () => {
           </button>
         </div>
       </div>
+       
     </div>
+
+     {showInfoPopup && (
+      <div className="fixed inset-0 top-10 z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 shadow-xl rounded-lg w-full max-w-sm sm:max-w-md">
+            <div className="p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Chat Info</h3>
+                <button
+                  onClick={toggleInfoPopup}
+                  className="p-1 hover:bg-gray-100 cursor-pointer rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                {/* Chat Score */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Chat Score
+                  </label>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${chatPersonalization?.compatibilityScore}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {chatPersonalization?.compatibilityScore}/100
+                    </span>
+                  </div>
+                </div>
+
+                {/* Personalized Comment */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Personalized Comment
+                  </label>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {chatPersonalization?.personalizedComment || "No personalized comment available."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      )}
+
+      {showInfoPopup && (
+        <div 
+          className="fixed inset-0 bg-black/30 bg-opacity-25 z-40"
+          onClick={toggleInfoPopup}
+        ></div>
+      )}
+    </>
   );
 };
 

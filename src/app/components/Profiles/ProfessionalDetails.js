@@ -555,7 +555,6 @@ const MatrimonialProfile = ({nextStep,isEdit = false}) => {
     occupation: '',
     employerName: '',
     annualIncome: '',
-    careerDescription: '',
   });
  
   // Fetch income options
@@ -790,24 +789,13 @@ const fetchEducationOptions = async () => {
           })
       }
 
-      // Create FormData for file upload
-      const submitData = new FormData();
-      
-      // Append all form fields
-      Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== '') {
-          submitData.append(key, formData[key]);
-        }
-      });
- 
       // Choose API endpoint based on edit mode
       const apiUrl = isEditMode
         ? '/user/update-professional-datas'
         : '/user/add-professional-details';
  
-      await axiosPublic.post(apiUrl, submitData,{
+      await axiosPublic.post(apiUrl, formData,{
         headers: {
-          'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
         },
       })

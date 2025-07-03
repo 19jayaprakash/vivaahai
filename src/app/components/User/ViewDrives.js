@@ -25,12 +25,14 @@ const HorizontalDrivesCarousel = () => {
   useEffect(() => {
     async function fetchDrives() {
       try {
-        const response = await axiosPublic.get('/drive/drives', {
+        const response = await axiosPublic.get('/drive/drives/selectedUsers', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        setDrive(response.data || []);
+        if(response.status === 200){
+          setDrive([...response.data.allDrives,...response.data.matchingDrives] || []);
+        }
       } catch (error) {
         console.error('Error fetching drives:', error);
       }
@@ -185,7 +187,7 @@ const HorizontalDrivesCarousel = () => {
          
           return (
             <div
-              key={drive.id}
+              key={drive.driveId}
               className="flex-shrink-0"
               style={{
                 width: `${CARD_WIDTH}px`,

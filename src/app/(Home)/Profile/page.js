@@ -77,7 +77,7 @@ const filterDisplayData = (data, showEmptyFields = false) => {
 // Simple Loading Component
 const SimpleLoader = () => (
   <div className="flex min-h-screen justify-center items-center bg-gradient-to-br from-pink-50 to-red-50">
-    <div className="text-center">
+    <div className="text-center flex flex-col items-center">
       <div className="w-16 h-16 border-4 border-pink-200 border-t-[#FF6B6B] rounded-full animate-spin mb-6"></div>
       <p className="text-gray-700 text-xl font-medium">Loading your profile...</p>
       <div className="flex justify-center space-x-1 mt-4">

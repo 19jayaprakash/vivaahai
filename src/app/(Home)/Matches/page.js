@@ -324,13 +324,13 @@ const MatchCard = ({ match }) => {
           </div>
          
           {/* Schedule Meet Button */}
-          <button
+          {/* <button
             onClick={handleScheduleMeet}
             className="w-full cursor-pointer bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm flex items-center justify-center gap-2"
           >
             <Calendar size={12} />
             Schedule Meet
-          </button>
+          </button> */}
  
           {/* View Profile Link */}
           <button
